@@ -3,7 +3,14 @@
 //
 
 module.exports = {
-	client: require('./client'),
-	server: require('./server'),
-	mode: require('./mode')
+	client: {
+		setup: require('./client/setup'),
+		verify: require('./client/verify'),
+		verifyServer: require('./client/verify-server')
+	},
+	server: {
+		add: require('./server/verify')
+	},
+	mode: require('./Mode'),
+	config: require('./Config')
 };

@@ -1,25 +1,25 @@
-var Utils = require('./utils');
+var Utils = require('./Utils');
 var fs = require('fs');
-var config = require('./../../conf/config');
+var ServerConfig = require('./../../conf/config');
 
-module.exports = function(mode){
+module.exports = function(mode) {
 	switch (mode) {
 		case 'client':
+			Utils.client.verify(function(validConfig) {
+				console.log('NightWatch >> Client >> Starting..'.yellow);
 
-			// Run validate against the client config
-			// 	to ensure it has a home & port set..
-			Utils.validate.client.config(config, function(confValid) {
-				console.log('NightWatch >> Client >> Starting..');
 				// Load Client.js File
-				var Client = require('./core/Client');
-				Client.start(confValid);
+				var Client = require('./../client/Client');
+
+				Client.start(validConfig);
 			});
+
 			break;
 
 		case 'server':
 			var Server = require('./../server/server');
 
-			Server.start(config);
+			Server.start(ServerConfig);
 			break;
 	}
 };

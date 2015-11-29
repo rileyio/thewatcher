@@ -1,11 +1,9 @@
 module.exports = {
-    utils: {
-        add: {
-            name: 'add',
-            shortName: 'a',
-            type: 'string',
-            help: 'n/a'
-        }
+    add: {
+        name: 'add',
+        shortName: 'a',
+        type: 'string',
+        help: 'n/a'
     },
     config: {
         name: 'config',
@@ -14,7 +12,7 @@ module.exports = {
         help: 'n/a'
     },
     mode: {
-    	name: 'mode',
+        name: 'mode',
         shortName: 'm',
         type: 'string',
         help: 'n/a'

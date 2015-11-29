@@ -73,3 +73,10 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Config file
+conf/config.js
+client.json
+
+# Keys
+conf/keys/*

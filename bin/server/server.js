@@ -4,62 +4,51 @@
 // 
 // Server Spawner
 
-console.log('NightWatch>>Server :: Starting up..');
+console.log('NightWatch >> Server :: Starting up..');
 
-// var express = require('express');
-// var app = express();
-// var bodyParser = require('body-parser');
+var app = require('express')();
+var http = require('http').createServer(app);
+var io = require('socket.io')(http);
+var bodyParser = require('body-parser');
+
 var Database = require('./../db/database');
+
 
 exports.start = function(config) {
 
-	// app.use(bodyParser.json());
+	app.use(bodyParser.json());
 
 	// Setup DB
 	var DB = Database.connection(config.db);
 
-	// // Post to ADDR:PORT
-	// app.post('/', function(req, res) {
-	// 	// Debugging..
-	// 	// console.log(req.body)
+	// Listen for start of handshakes from clients
+	app.get('/connect', function(req, res, next) {
+		res.send({
+			status: 'connected'
+		});
+	});
 
-	// 	// Validate user
-	// 	validate_client(req.body.name, req.body.id, function(resp) {
-	// 		if (resp) { // If the client is active and valid 
-	// 			console.log(' :: Client >> \'' + req.body.name + '\' << VALID!');
 
-	// 			// Save to DB
-	// 			db.checkins.insert(req.body, function(err, newDoc) {
-	// 				if (err) throw err;
-	// 				console.log(' :: Client >> Saved to DB >> Checkin for \'' + req.body.name + '\'');
+	// Socket [Connection] listening
+	io.on('connection', function(socket) {
+		console.log('a user connected');
 
-	// 				// Reply to client..
-	// 				res.send(JSON.stringify({
-	// 					checkin: 'successful',
-	// 					valid: true
-	// 				}));
-	// 			});
-	// 		} else { // Client !VALID
-	// 			console.log(' :: Client >> \'' + req.body.name + '\' << NOT VALID!')
+		socket.broadcast.emit('hi');
+		socket.on('connect', function() {
+			console.log(' Connection Made!');
+		});
+	});
 
-	// 			// Reply to client..
-	// 			res.send(JSON.stringify({
-	// 				checkin: 'failed',
-	// 				err: 'Not a valid/registered client.',
-	// 				valid: false
-	// 			}));
-	// 		}
-	// 	});
-	// });
 
-	// // Start listening on defined ADDR:PORT for Posts
-	// var server = app.listen(config.port, function() {
-	// 	var host = server.address().address;
-	// 	var port = server.address().port;
+	// Initaialize Socket IO with given port in server config
+	var expressServer = app.listen(config.port, function() {
+		var host = expressServer.address().address;
+		var port = expressServer.address().port;
 
-	// 	console.log('NightWatch >> Listening @ http://%s:%s', host, port);
-	// });
+		// Good to listen
+		// Print successful startup
+		console.log('NightWatch >> Listening @ //%s:%s', host, port);
+	});
 
-	// console.log('NightWatch >> Server >> Started!');
 
-}
+};

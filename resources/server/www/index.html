@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+    <head>
+        <title>NightWatch - Server (By: TheDoxMedia)</title>
+        <style>
+            body{font-family: monospace;}
+        </style>
+    </head>
+    <body>
+    <ul id="messages"></ul>
+    <div>
+        Clients Connected: <span id="clients-connected">n/a</div>
+    </div>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+		var socket = io.connect('http://127.0.0.1:3306');
+		
+		socket.on('connect', function () {
+			socket.emit('authentication', {
+				username: "admin",
+				password: "test"
+			});
+		});
+		
+		socket.on('authenticated', function () {
+			console.log('Socket Connected!');
+			// Monitor();
+		});
+		
+		socket.on('unauthorized', function (err) {
+			console.log("There was an error with the authentication:", err.message);
+		});
+		
+		socket.on('server-stats', function (data) {
+			$('#clients-connected').text(data.connected);
+		});
+
+        // $('form').submit(function(){
+        //     socket.emit('#server-view', $('#m').val());
+        //     $('#m').val('');
+        //     return false;
+        // });
+
+		
+        socket.on('disconnect', function(data){
+            console.log(data);
+            $('#clients-connected').text('Disconnected');
+			
+			clearInterval(interval);
+        });
+		
+        socket.on('error', function(err){
+            console.log(err);
+            $('#clients-connected').text(err);
+        });
+		
+		function Monitor(){
+			var interval = setInterval(function () {
+				// Get Connected Clients
+				socket.emit('server-stats');
+			}, 100);
+		}
+		
+        </script>
+    </body>
+</html>

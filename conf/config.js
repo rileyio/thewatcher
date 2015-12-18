@@ -5,6 +5,7 @@ module.exports = {
 	args: require('./args'),
 
 	db: {
+		type: 'mysql',
 		host: '',
 		database: '',
 		user: '',

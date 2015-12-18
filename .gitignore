@@ -80,3 +80,7 @@ client.json
 
 # Keys
 conf/keys/*
+
+# Editors
+# =========================
+.vscode/settings.json

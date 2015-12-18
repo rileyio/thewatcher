@@ -2,7 +2,6 @@ var crypto = require('crypto');
 var prompt = require('prompt');
 var fs = require('fs');
 var openpgp = require('openpgp');
-var nodeSpinner = require('node-spinner');
 
 module.exports = function(calling) {
 	var _client = {
@@ -10,9 +9,10 @@ module.exports = function(calling) {
 		id: '',
 		lat: '',
 		lon: '',
+		server: '',
 		createTime: 0,
 		mode: 'client',
-		port: 0,
+		// port: 0,
 		valid: true,
 		key: {
 			public: {
@@ -50,11 +50,17 @@ module.exports = function(calling) {
 				pattern: /^((\-)?[0-9]{1,3}.[0-9]{0,8})$/,
 				required: true
 			},
-			port: {
-				description: 'Communication port: '.green,
-				pattern: /^([0-9]{1,5})$/,
+			// port: {
+			// 	description: 'Communication port: '.green,
+			// 	pattern: /^([0-9]{1,5})$/,
+			// 	required: true,
+			// 	default: 3305
+			// },
+			server: {
+				description: 'Home server address: '.green,
+				// pattern: /^([0-9]{1,5})$/,
 				required: true,
-				default: 3305
+				default: '127.0.0.1'
 			}
 		},
 
@@ -66,7 +72,8 @@ module.exports = function(calling) {
 			_client.lat = userInput.lat;
 			_client.lon = userInput.lon;
 			_client.createTime = (Date.now() / 1000);
-			_client.port = userInput.port;
+			// _client.port = userInput.port;
+			_client.server = userInput.server;
 			_client.key.private.path = PGPKeyPath.Private;
 			_client.key.public.path = PGPKeyPath.Public;
 

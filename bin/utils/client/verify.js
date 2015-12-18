@@ -11,8 +11,13 @@ module.exports = function(callback) {
 		if (err) throw err;
 		var config = JSON.parse(data.toString());
 
-		// Load PGP key
-		config.key = keyReader(config.keyPath);
+		// console.log(config)
+
+		// Load PGP keys
+		// config.key = array of key paths
+		config.key = keyReader(config.key);
+
+		// console.log(config.key);
 
 		console.log('NightWatch >> Client >> Config loaded!'.green);
 
@@ -20,4 +25,4 @@ module.exports = function(callback) {
 		callback(config);
 
 	});
-}
+};

@@ -1,15 +1,29 @@
 var fs = require('fs');
+var path = require('path');
 
-module.exports = function(keyPath) {
+module.exports = function(keys) {
+	var _keys = {
+		private: undefined,
+		public: undefined
+	};
+
 	try {
-		var key = fs.readFileSync(keyPath);
+		// Check that key path is not empty
+		// if (keys.private.length) {
+		console.log('NightWatch >> Client >> PGP [Private] Key Loaded!'.green);
+		// _keys.private = loadKey(keys.private.path);
 
-		if (key.length) {
-			console.log('NightWatch >> Client >> PGP Key Loaded!'.green);
+		console.log('NightWatch >> Client >> PGP [Public] Key Loaded!'.green);
+		_keys.public = loadKey(keys.public.path);
 
-			return key;
-		}
+		return _keys;
+		
+		// }
 	} catch (err) {
-		console.log('NightWatch::Error >> '.red, err);
+		console.log('NightWatch >> Error >> '.red, err);
 	}
 };
+
+function loadKey(kPath) {
+	return fs.readFileSync(path.join(process.env.NW_INSTALL_DIR, kPath));
+}

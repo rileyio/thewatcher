@@ -6,6 +6,7 @@
 // Running: node index.js -c <path to config file>
 var config = require('./../conf/config');
 var args = require('args');
+var path = require('path');
 var Utils = require('./utils/utils');
 
 exports.init = function() {
@@ -31,7 +32,19 @@ exports.init = function() {
 function start(pArgs) {
 	// try {
 	// If a -m (mode) is passed
-	console.log(pArgs)
+	console.log(pArgs);
+
+	// Set globals
+	global.NightWatch = {
+		name: 'NightWatch',
+		version: '0.0.2',
+		path: {
+			resources: path.resolve(__dirname + '/..') + '/resources'
+		},
+	};
+	
+	// Setup ENV vars
+	process.env.NW_INSTALL_DIR = path.resolve(__dirname + '/..');
 
 
 	if (pArgs.mode) {

@@ -4,7 +4,7 @@
 // Main js file for loading the project.
 // 
 // Running: node index.js -c <path to config file>
-var config = require('./../conf/config');
+var appConf = require('./../conf/app');
 var args = require('args');
 var path = require('path');
 var Utils = require('./utils/utils');
@@ -12,9 +12,9 @@ var Utils = require('./utils/utils');
 exports.init = function() {
 	// Check for mode being started in..
 	var options = args.Options.parse([
-		config.args.mode,
-		config.args.config,
-		config.args.add
+		appConf.args.mode,
+		appConf.args.config,
+		appConf.args.add
 	]);
 	var parsedStartArgs;
 
@@ -44,8 +44,7 @@ function start(pArgs) {
 	};
 	
 	// Setup ENV vars
-	process.env.NW_INSTALL_DIR = path.resolve(__dirname + '/..');
-
+	process.env.NW_DIR = path.resolve(__dirname + '/..');
 
 	if (pArgs.mode) {
 		Utils.mode(pArgs.mode);

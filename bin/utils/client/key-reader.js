@@ -25,5 +25,5 @@ module.exports = function(keys) {
 };
 
 function loadKey(kPath) {
-	return fs.readFileSync(path.join(process.env.NW_INSTALL_DIR, kPath));
+	return fs.readFileSync(path.join(process.env.NW_DIR, kPath));
 }

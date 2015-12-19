@@ -1,6 +1,5 @@
 var Utils = require('./Utils');
-var fs = require('fs');
-var ServerConfig = require('./../../conf/config');
+var app = require('./../../conf/app');
 
 module.exports = function(mode) {
 	switch (mode) {
@@ -17,9 +16,12 @@ module.exports = function(mode) {
 			break;
 
 		case 'server':
-			var Server = require('./../server/server');
+			// Load server config JSON
+			var serverConfig = Utils.server.load.config();
+		
+			// Load Server Core
+			require('./../server/server').start(app);
 
-			Server.start(ServerConfig);
 			break;
 	}
 };

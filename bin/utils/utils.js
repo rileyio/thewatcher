@@ -9,7 +9,10 @@ module.exports = {
 		verifyServer: require('./client/verify-server')
 	},
 	server: {
-		add: require('./server/verify')
+		add: require('./server/verify'),
+		load: {
+			config: require('./server/config-loader'),
+		},
 	},
 	mode: require('./Mode'),
 	config: require('./Config')

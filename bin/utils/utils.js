@@ -10,6 +10,7 @@ module.exports = {
 	},
 	server: {
 		add: require('./server/verify'),
+		setup: require('./server/setup'),		
 		load: {
 			config: require('./server/config-loader'),
 		},

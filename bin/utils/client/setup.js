@@ -2,6 +2,7 @@ var crypto = require('crypto');
 var prompt = require('prompt');
 var fs = require('fs');
 var openpgp = require('openpgp');
+var path = require('path');
 
 module.exports = function(calling) {
 	var _client = {
@@ -57,10 +58,10 @@ module.exports = function(calling) {
 			// 	default: 3305
 			// },
 			server: {
-				description: 'Home server address: '.green,
+				description: 'Home server address:port '.green,
 				// pattern: /^([0-9]{1,5})$/,
 				required: true,
-				default: '127.0.0.1'
+				default: '127.0.0.1:3306'
 			}
 		},
 
@@ -99,7 +100,7 @@ function create_json(data) {
 	}, function(err, results) {
 		if (results.name.toLowerCase() == 'y') {
 			// Answering [y]es writes the client.json file
-			fs.writeFile('client.json', JSON.stringify(data, null, '\t'), function() {
+			fs.writeFile(path.resolve(process.env.NW_DIR, 'conf/client.json'), JSON.stringify(data, null, '\t'), function() {
 				if (err) throw err;
 				console.log('NightWatch >> Client :: CreateJSON >> client.json'.cyan);
 			});
@@ -138,15 +139,15 @@ function generate_key(userInput, callback) {
 
 		// Save keys to files
 		// [PRI] {install}/conf/keys/PrivateKey.pgp
-		fs.writeFileSync('./conf/keys/PrivateKey', privkey);
+		fs.writeFileSync(path.resolve(process.env.NW_DIR, 'conf/keys/PrivateKey'), privkey);
 
 		// [PUB] {install}/conf/keys/PublicKey.pgp
-		fs.writeFileSync('./conf/keys/PublicKey.pgp', pubkey);
+		fs.writeFileSync(path.resolve(process.env.NW_DIR, 'conf/keys/PublicKey.pgp'), pubkey);
 
 		// Callback
 		callback({
-			Private: './conf/keys/PrivateKey',
-			Public: './conf/keys/PublicKey.pgp'
+			Private: path.resolve(process.env.NW_DIR, 'conf/keys/PrivateKey'),
+			Public: path.resolve(process.env.NW_DIR, 'conf/keys/PublicKey.pgp')
 		});
 
 	}).catch(function(error) {

@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 
 module.exports = function(keys) {
+	
 	var _keys = {
 		private: undefined,
 		public: undefined
@@ -25,5 +26,5 @@ module.exports = function(keys) {
 };
 
 function loadKey(kPath) {
-	return fs.readFileSync(path.join(process.env.NW_DIR, kPath));
+	return fs.readFileSync(kPath);
 }

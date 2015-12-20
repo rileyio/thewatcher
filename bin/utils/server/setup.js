@@ -128,7 +128,7 @@ function create_json(data) {
 	}, function(err, results) {
 		if (results.name.toLowerCase() == 'y') {
 			// Answering [y]es writes the server.json file
-			fs.writeFile(path.resolve(process.env.NW_DIR, 'conf/server.json'), JSON.stringify(data, null, '\t'), function() {
+			fs.writeFile(path.join(__NW, 'conf/server.json'), JSON.stringify(data, null, '\t'), function() {
 				if (err) throw err;
 				console.log('NightWatch >> Server :: CreateJSON >> server.json'.cyan);
 			});
@@ -161,15 +161,15 @@ function generate_key(userInput, callback) {
 
 		// Save keys to files
 		// [PRI] {install}/conf/keys/SVR_PrivateKey.pgp
-		fs.writeFileSync(path.resolve(process.env.NW_DIR, 'conf/keys/SVR_PrivateKey'), privkey);
+		fs.writeFileSync(path.join(__NW, 'conf/keys/SVR_PrivateKey'), privkey);
 
 		// [PUB] {install}/conf/keys/SVR_PublicKey.pgp
-		fs.writeFileSync(path.resolve(process.env.NW_DIR, 'conf/keys/SVR_PublicKey.pgp'), pubkey);
+		fs.writeFileSync(path.join(__NW, 'conf/keys/SVR_PublicKey.pgp'), pubkey);
 
 		// Callback
 		callback({
-			Private: path.resolve(process.env.NW_DIR, 'conf/keys/SVR_PrivateKey'),
-			Public: path.resolve(process.env.NW_DIR, 'conf/keys/SVR_PublicKey.pgp')
+			Private: path.join(__NW, 'conf/keys/SVR_PrivateKey'),
+			Public: path.join(__NW, 'conf/keys/SVR_PublicKey.pgp')
 		});
 
 	}).catch(function(error) {

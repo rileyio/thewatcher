@@ -100,7 +100,7 @@ function create_json(data) {
 	}, function(err, results) {
 		if (results.name.toLowerCase() == 'y') {
 			// Answering [y]es writes the client.json file
-			fs.writeFile(path.resolve(process.env.NW_DIR, 'conf/client.json'), JSON.stringify(data, null, '\t'), function() {
+			fs.writeFile(path.join(__NW, 'conf/client.json'), JSON.stringify(data, null, '\t'), function() {
 				if (err) throw err;
 				console.log('NightWatch >> Client :: CreateJSON >> client.json'.cyan);
 			});
@@ -139,15 +139,15 @@ function generate_key(userInput, callback) {
 
 		// Save keys to files
 		// [PRI] {install}/conf/keys/PrivateKey.pgp
-		fs.writeFileSync(path.resolve(process.env.NW_DIR, 'conf/keys/PrivateKey'), privkey);
+		fs.writeFileSync(path.join(__NW, 'conf/keys/PrivateKey'), privkey);
 
 		// [PUB] {install}/conf/keys/PublicKey.pgp
-		fs.writeFileSync(path.resolve(process.env.NW_DIR, 'conf/keys/PublicKey.pgp'), pubkey);
+		fs.writeFileSync(path.join(__NW, 'conf/keys/PublicKey.pgp'), pubkey);
 
 		// Callback
 		callback({
-			Private: path.resolve(process.env.NW_DIR, 'conf/keys/PrivateKey'),
-			Public: path.resolve(process.env.NW_DIR, 'conf/keys/PublicKey.pgp')
+			Private: path.join(__NW, 'conf/keys/PrivateKey'),
+			Public: path.join(__NW, 'conf/keys/PublicKey.pgp')
 		});
 
 	}).catch(function(error) {

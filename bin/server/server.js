@@ -9,8 +9,6 @@ console.log('NightWatch >> Server :: Starting up..');
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var fs = require('fs');
-var path = require('path');
 
 // Express middleware
 var bodyParser = require('body-parser');
@@ -24,7 +22,7 @@ var Database = require('./../db/database');
 exports.start = function (config) {
 
 	// Access NightWatch global
-	var NW = global.NW;
+	// var NW = global.NW;
 
 	// Setup Primary DB
 	var DB = Database.connection(config.db);
@@ -32,9 +30,6 @@ exports.start = function (config) {
 	// Setup MemDB
 	var MemDB = new Loki('loki.json');
 	var Heartbeats = MemDB.addCollection('heartbeats');
-	
-	// Server resources dir
-	var resourcesDir = process.env.NW_DIR;
 
 	// Clients running array
 	var stats = {
@@ -44,7 +39,7 @@ exports.start = function (config) {
 	// Listen for start of handshakes from clients
 	app.get('/', function (req, res) {
 		// Send local server monitoring panel
-		res.sendFile(resourcesDir + '/server/www/index.html');
+		res.sendFile(__NW + '/resources/server/www/index.html');
 		// if (!req.user) {
 		// 	res.send(401);
 		// } else {

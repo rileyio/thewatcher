@@ -1,17 +1,15 @@
-// var crypto = require('crypto');
-// var prompt = require('prompt');
 var fs = require('fs');
 var keyReader = require('./key-reader');
+var path = require('path');
 
 // Function subset for validating
 module.exports = function(callback) {
+	
 	console.log('Checking for config file..'.grey);
 
-	fs.readFile('client.json', function(err, data) {
+	fs.readFile(path.join(__NW, 'conf/client.json'), function(err, data) {
 		if (err) throw err;
 		var config = JSON.parse(data.toString());
-
-		// console.log(config)
 
 		// Load PGP keys
 		// config.key = array of key paths

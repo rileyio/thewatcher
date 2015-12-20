@@ -36,17 +36,10 @@ function start(pArgs) {
 
 	// Set globals
 	global.NW = appConf;
-		
-		// name: 'NightWatch',
-		// version: '0.0.2',
-		// path: {
-		// 	resources: path.resolve(__dirname + '/..') + '/resources'
-		// },
-	// };
 	
-	// Setup ENV vars
-	process.env.NW_DIR = path.resolve(__dirname + '/..');
-
+	// Set NightWatch running Dir under __NW
+	global.__NW = path.resolve(__dirname + '/..');
+	
 	if (pArgs.mode) {
 		Utils.mode(pArgs.mode);
 	}

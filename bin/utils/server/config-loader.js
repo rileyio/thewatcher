@@ -3,7 +3,7 @@ var path = require('path');
 
 module.exports = function(){
 	// Config path
-	var configPath = path.resolve(process.env.NW_DIR, 'conf/server.json');
+	var configPath = path.join(__NW, 'conf/server.json');
 
 	// Try loading the default config location
 	// Wrapped in try to throw config loading error if files does not exist.

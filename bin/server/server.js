@@ -23,16 +23,18 @@ var Database = require('./../db/database');
 
 exports.start = function (config) {
 
+	// Access NightWatch global
+	var NW = global.NW;
+
 	// Setup Primary DB
 	var DB = Database.connection(config.db);
 	
 	// Setup MemDB
 	var MemDB = new Loki('loki.json');
 	var Heartbeats = MemDB.addCollection('heartbeats');
-
 	
 	// Server resources dir
-	var resourcesDir = global.NightWatch.path.resources;
+	var resourcesDir = process.env.NW_DIR;
 
 	// Clients running array
 	var stats = {

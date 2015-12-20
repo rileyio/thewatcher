@@ -1,5 +1,5 @@
 var Utils = require('./Utils');
-var app = require('./../../conf/app');
+// var NightWatch = require('./../../conf/app');
 
 module.exports = function(mode) {
 	switch (mode) {
@@ -16,11 +16,8 @@ module.exports = function(mode) {
 			break;
 
 		case 'server':
-			// Load server config JSON
-			var serverConfig = Utils.server.load.config();
-		
-			// Load Server Core
-			require('./../server/server').start(app);
+			// Load server config JSON & pass to Server Core
+			require('./../server/server').start(Utils.server.load.config());
 
 			break;
 	}

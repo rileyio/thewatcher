@@ -9,13 +9,12 @@ A client to server monitoring tool (*Keeps watch over its clients through the ni
 ##### Clone the project
 
 > **Recommendation:** Use the master branch for the best stability,
-  If you wish to try an expiermental / dev branch checkout the version
-  branches.
+  If you wish to try an experimental / dev branch checkout be aware, there
+  will be errors / incomplete functionality.
 
 ```
-git clone git@gitlab.com:tdm/NightWatch.git
+git clone https://github.com/TheDoxMedia/nightwatch.git
 ```
-
 
 ##### Get Dependencies
 
@@ -28,27 +27,17 @@ npm install
 ### # Running / Commands
 > All commands starting with `node index.js`
 
- Desc          | Shorthand     | Full       | Arg / Options           |
----------------|-------------------------------------------------------
-Starting up    | `-c`          | `--config` | `</path/to/file.json>`
-Adding a client| `-a`          | `--add`    | `client`
+| Desc               | Shorthand     | Full       | Arg / Options           |
+|:-------------------|---------------|------------|-------------------------|
+| Run Config Builder | `-c`          | `--config` | `client | server`       |
+| Start in mode      | `-m`          | `--mode`    | `client | server`      |
 
-### # Setting up the server
-
-Create a server.json file and define the port & set the mode.
-
-**Example**
-
-```
-{
-	"mode": "server",
-	"port": 3560
-}
-```
 
 ---
 
 ### # Versions
+##### 0.0.2
+  - Rebuilding (Current Master/Dev Branches)
 
 ##### 0.0.1
   - Initial release.

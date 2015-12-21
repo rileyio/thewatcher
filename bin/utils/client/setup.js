@@ -121,7 +121,7 @@ function generate_key(userInput, callback) {
 	var options = {
 		numBits: 2048,
 		userId: userInput.name,
-		passphrase: 'super long and hard to guess secret'
+		// passphrase: 'super long and hard to guess secret'
 	};
 
 	// var s = nodeSpinner();

@@ -12,7 +12,7 @@ module.exports = function(keys) {
 		// Check that key path is not empty
 		// if (keys.private.length) {
 		console.log('NightWatch >> Client >> PGP [Private] Key Loaded!'.green);
-		// _keys.private = loadKey(keys.private.path);
+		_keys.private = loadKey(keys.private.path);
 
 		console.log('NightWatch >> Client >> PGP [Public] Key Loaded!'.green);
 		_keys.public = loadKey(keys.public.path);
@@ -26,5 +26,5 @@ module.exports = function(keys) {
 };
 
 function loadKey(kPath) {
-	return fs.readFileSync(kPath);
+	return fs.readFileSync(kPath).toString();
 }

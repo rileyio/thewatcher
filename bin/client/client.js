@@ -15,15 +15,24 @@ var Utils = require('./../utils/Utils');
 
 
 exports.start = function (config) {
-
 	var socket = io.connect('http://' + config.server, {
 		'forceNew': true,
 	});
+	
 
-	socket.on('connect', function () {
-		socket.emit('authentication', {
-			username: "jaydox",
-			password: "test"
+	socket.on('connect', function (sio) {
+		var prepMsg = JSON.stringify({
+			session: socket.id,
+			name: config.name
+		});
+
+		Utils.client.sign(config.key.private, prepMsg, function (signed) {
+			// console.log(signed);
+			
+			socket.emit('authentication', {
+				name: config.name,
+				signed: signed
+			});
 		});
 	});
 
@@ -60,11 +69,10 @@ exports.start = function (config) {
 		setInterval(function () {
 			var heartbeatTime = Date.now();
 
-			console.log(heartbeatTime);
+			// console.log(config);
 
 			socket.emit('client-heartbeat', {
-				username: "jaydox",
-				name: "jaydox",
+				name: config.name,
 				time: heartbeatTime,
 				data: HeartBeatData()
 			});

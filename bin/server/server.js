@@ -9,6 +9,7 @@ console.log('NightWatch >> Server :: Starting up..');
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var Utils = require('./../utils/utils');
 
 // Express middleware
 var bodyParser = require('body-parser');
@@ -21,11 +22,8 @@ var Database = require('./../db/database');
 
 exports.start = function (config) {
 
-	// Access NightWatch global
-	// var NW = global.NW;
-
 	// Setup Primary DB
-	var DB = Database.connection(config.db);
+	var DB = new Database(config.db);
 	
 	// Setup MemDB
 	var MemDB = new Loki('loki.json');
@@ -62,37 +60,58 @@ exports.start = function (config) {
 	
 	require('socketio-auth')(io, {
 		authenticate: function (socket, data, callback) {
-			console.log('Socket IO Auth');
+			console.log('Socket IO Auth (i.e login)');
 
-			var username = data.username;
-			var password = data.password;
+			// Lookup client in DB
+			DB.client.get({
+				name: data.name
+			}, function (result) {
+				if (result) {
+					// console.log(result)
+					Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
+						if (ret.signatures[0].valid) {
+							// console.log(ret.signatures[0].valid)
+							// Save client's new session id to DB
+							DB.client.update({
+								name: data.name,
+								session: socket.id
+							});
 
-			if (password === 'test') {
-				return callback(null, password);
-			}
-			else {
-				return callback(new Error("User not found"));
-			}
+							return callback(null, 'authd');
+						}
+						else {
+							return callback(new Error('Authentication error!'));
+						}
+					});
+				}
+				else {
+					return callback(new Error('Client not found'));
+				}
+			});
+
 		},
 		postAuthenticate: function (socket, data) {
 			console.log('Socket IO POSTAuth');
 
-			var username = data.username;
-			socket.client.user = username;
+			var name = data.name;
+			socket.client.user = name;
 			
 			// Check if client is in the heartbeats MemDB
-			var inMemDB = Heartbeats.findOne({ name: username });
+			var inMemDB = Heartbeats.findOne({
+				name: name,
+				session: socket.client.id
+			});
 			
-			// Add client to heart beats array
-			if (!inMemDB){
-				console.log('NightWatch >> Server >> MemDB::Heartbeats(add:%s)', username);
-				
+			// Add client to heartbeats array
+			if (!inMemDB) {
+				console.log('NightWatch >> Server >> MemDB::Heartbeats(add:%s)', name);
+
 				Heartbeats.insert({
-					name: username,
+					name: name,
 					data: {}
 				});
 			}
-			
+
 			stats.connected++;
 			sendStats();
 
@@ -100,7 +119,7 @@ exports.start = function (config) {
 				// Update heartbeat mem db
 				var update = Heartbeats.findOne({ 'name': heartbeat.name });
 				
-				// console.log(Heartbeats.data);
+				// console.log(Heartbeats);
 				// console.log(heartbeat.name);
 				// console.log(update);
 				
@@ -123,10 +142,8 @@ exports.start = function (config) {
 			// and send data
 			function sendStats() {
 				console.log('Send Stats Called..');
-	
-				// console.log(Heartbeats.findOne({ name: socket.client.user }));			
-				
-				if (username === 'admin') {
+
+				if (name === 'admin') {
 					console.log('Send Stats To Admin!');
 					io.to(socket.id).emit('server-stats', {
 						stats: stats,

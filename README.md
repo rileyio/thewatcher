@@ -2,6 +2,7 @@ NightWatch
 ==========
 A client to server monitoring tool (*Keeps watch over its clients through the night for you.*)
 
+[![Dependency Status](https://david-dm.org/thedoxmedia/nightwatch.svg?style=flat-square)](https://david-dm.org/thedoxmedia/nightwatch) [![Code Climate](https://img.shields.io/codeclimate/github/kabisaict/flow.svg?style=flat-square)](https://codeclimate.com/github/TheDoxMedia/nightwatch)
 ---
 
 ### # Setup

@@ -83,3 +83,4 @@ conf/keys/*
 # Editors
 # =========================
 .vscode/settings.json
+typings/node/node.d.ts

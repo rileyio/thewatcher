@@ -2,10 +2,14 @@
 // By #TheDoxMedia
 //
 
-var NightWatch = require('./bin/app');
-var app = new NightWatch;
+// Called directly ( node index.js <...> )
+if (require.main === module){
+	// Load cmd.js
+	require('./bin/cmd')
+}
 
-// Parse args
-app.init(process.argv);
-app.start({ mode: 'server' });  // Can be used to override/inplace app.init
-// app.start();
+// require('nightwatch')
+else{
+	// Export nightwatch
+	module.exports = require('./bin/app')
+}

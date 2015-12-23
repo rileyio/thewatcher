@@ -10,7 +10,7 @@ var packageJson = require('../package.json');
 // var child_process = require('child_process');
 
 process.title = 'NightWatch';
-process.on('exit', function(){
+process.on('exit', function () {
 	console.log('NightWatch exiting..'.cyan);
 });
 
@@ -32,21 +32,23 @@ var args = minimist(process.argv.slice(2), {
 	]
 });
 
-
 // Setup a client or server & setup its {type}.json
-if (args.setup){
+if (args.setup) {
 	app.utils[args.setup].setup();
-	process.exit(0);
 }
-
-// If a mode is start NightWatch as that
-if (args.mode){
+// Start NightWatch in requested mode
+else if (args.mode) {
 	NW_MODE = args.mode;
-	
+
 	app[NW_MODE]();
 }
+else{
+	// If no selection is made, return fullText()
+	fullText();
+}
 
-console.log(multiline(function(){/*
+function fullText() {
+	console.log(multiline(function () {/*
    
    NightWatch - %s
    
@@ -63,3 +65,4 @@ console.log(multiline(function(){/*
       nightwatch -s client	Interactive setup
    
 */}), packageJson.version);
+}

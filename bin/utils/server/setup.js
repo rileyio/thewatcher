@@ -3,17 +3,9 @@ var prompt = require('prompt');
 var fs = require('fs');
 var openpgp = require('openpgp');
 var path = require('path');
-var logger = require('winston');
 
-var Setup = function () {
-	var self = this;
-	
-	// Set log level
-	if (process.env.NODE_ENV === 'test'){
-		logger.setLevels('error');
-	}
-
-	self.conf = {
+module.exports = function (calling) {
+	var _server = {
 		name: '',
 		// version: NW.version,
 		id: '',
@@ -38,11 +30,7 @@ var Setup = function () {
 			pass: ''
 		}
 	};
-}
 
-Setup.prototype.run = function () {
-	var self = this;
-	
 	// Get user input
 	prompt.message = "";
 	prompt.delimiter = "";
@@ -97,29 +85,29 @@ Setup.prototype.run = function () {
 
 	}, function (err, userInput) {
 		// Start PGP Key gen
-		self.generate_key(userInput, function (PGPKeyPath) {
-			self.conf.id = id_gen(userInput.name);
-			self.conf.name = userInput.name;
-			self.conf.lat = userInput.lat;
-			self.conf.lon = userInput.lon;
-			self.conf.createTime = (Date.now() / 1000);
-			self.conf.port = userInput.port;
-			self.conf.key.private.path = PGPKeyPath.Private;
-			self.conf.key.public.path = PGPKeyPath.Public;
+		generate_key(userInput, function (PGPKeyPath) {
+			_server.id = id_gen(userInput.name);
+			_server.name = userInput.name;
+			_server.lat = userInput.lat;
+			_server.lon = userInput.lon;
+			_server.createTime = (Date.now() / 1000);
+			_server.port = userInput.port;
+			_server.key.private.path = PGPKeyPath.Private;
+			_server.key.public.path = PGPKeyPath.Public;
 			
 			// Database
-			self.conf.db.type = userInput.dbType;
-			self.conf.db.host = userInput.dbHost;
-			self.conf.db.database = userInput.dbName;
-			self.conf.db.user = userInput.dbUser;
-			self.conf.db.pass = userInput.dbPass;
+			_server.db.type = userInput.dbType;
+			_server.db.host = userInput.dbHost;
+			_server.db.database = userInput.dbName;
+			_server.db.user = userInput.dbUser;
+			_server.db.pass = userInput.dbPass;
 
-			self.create_json(self.conf);
+			create_json(_server);
 		});
 	});
 }
 
-Setup.prototype.create_json = function (data) {
+function create_json(data) {
 	prompt.message = "";
 	prompt.delimiter = "";
 	prompt.start();
@@ -144,7 +132,7 @@ Setup.prototype.create_json = function (data) {
 	});
 }
 
-Setup.prototype.id_gen = function (name) {
+function id_gen(name) {
 	var shasum = crypto.createHash('sha512');
 	var curTime = (Date.now() / 1000);
 
@@ -153,15 +141,14 @@ Setup.prototype.id_gen = function (name) {
 	return shasum.digest('hex');
 }
 
-Setup.prototype.generate_key = function (userInput, callback) {
+function generate_key(userInput, callback) {
 	var options = {
 		numBits: 2048,
 		userId: userInput.name,
-		passphrase: 'super long and hard to guess secret'
+		// passphrase: 'super long and hard to guess secret'
 	};
 
-	// console.log('NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
-	logger.log('info', 'NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
+	console.log('NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
 
 	openpgp.generateKeyPair(options).then(function (keypair) {
 		// Success
@@ -186,5 +173,3 @@ Setup.prototype.generate_key = function (userInput, callback) {
 		console.log(error);
 	});
 }
-
-module.exports = Setup;

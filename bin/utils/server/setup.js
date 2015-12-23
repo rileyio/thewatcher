@@ -3,15 +3,19 @@ var prompt = require('prompt');
 var fs = require('fs');
 var openpgp = require('openpgp');
 var path = require('path');
+var logger = require('winston');
 
-module.exports = function(calling) {
-	// Access NightWatch Global
-	var NW = global.NW;
+var Setup = function () {
+	var self = this;
 	
-	// Default structure
-	var _server = {
+	// Set log level
+	if (process.env.NODE_ENV === 'test'){
+		logger.setLevels('error');
+	}
+
+	self.conf = {
 		name: '',
-		version: NW.version,
+		// version: NW.version,
 		id: '',
 		lat: '',
 		lon: '',
@@ -34,7 +38,11 @@ module.exports = function(calling) {
 			pass: ''
 		}
 	};
+}
 
+Setup.prototype.run = function () {
+	var self = this;
+	
 	// Get user input
 	prompt.message = "";
 	prompt.delimiter = "";
@@ -87,31 +95,31 @@ module.exports = function(calling) {
 			}
 		},
 
-	}, function(err, userInput) {
+	}, function (err, userInput) {
 		// Start PGP Key gen
-		generate_key(userInput, function(PGPKeyPath) {
-			_server.id = id_gen(userInput.name);
-			_server.name = userInput.name;
-			_server.lat = userInput.lat;
-			_server.lon = userInput.lon;
-			_server.createTime = (Date.now() / 1000);
-			_server.port = userInput.port;
-			_server.key.private.path = PGPKeyPath.Private;
-			_server.key.public.path = PGPKeyPath.Public;
+		self.generate_key(userInput, function (PGPKeyPath) {
+			self.conf.id = id_gen(userInput.name);
+			self.conf.name = userInput.name;
+			self.conf.lat = userInput.lat;
+			self.conf.lon = userInput.lon;
+			self.conf.createTime = (Date.now() / 1000);
+			self.conf.port = userInput.port;
+			self.conf.key.private.path = PGPKeyPath.Private;
+			self.conf.key.public.path = PGPKeyPath.Public;
 			
 			// Database
-			_server.db.type = userInput.dbType;
-			_server.db.host = userInput.dbHost;
-			_server.db.database = userInput.dbName;
-			_server.db.user = userInput.dbUser;
-			_server.db.pass = userInput.dbPass;
+			self.conf.db.type = userInput.dbType;
+			self.conf.db.host = userInput.dbHost;
+			self.conf.db.database = userInput.dbName;
+			self.conf.db.user = userInput.dbUser;
+			self.conf.db.pass = userInput.dbPass;
 
-			create_json(_server);
+			self.create_json(self.conf);
 		});
 	});
 }
 
-function create_json(data) {
+Setup.prototype.create_json = function (data) {
 	prompt.message = "";
 	prompt.delimiter = "";
 	prompt.start();
@@ -125,10 +133,10 @@ function create_json(data) {
 				required: true
 			}
 		}
-	}, function(err, results) {
+	}, function (err, results) {
 		if (results.name.toLowerCase() == 'y') {
 			// Answering [y]es writes the server.json file
-			fs.writeFile(path.join(__NW, 'conf/server.json'), JSON.stringify(data, null, '\t'), function() {
+			fs.writeFile(path.join(__NW, 'conf/server.json'), JSON.stringify(data, null, '\t'), function () {
 				if (err) throw err;
 				console.log('NightWatch >> Server :: CreateJSON >> server.json'.cyan);
 			});
@@ -136,7 +144,7 @@ function create_json(data) {
 	});
 }
 
-function id_gen(name) {
+Setup.prototype.id_gen = function (name) {
 	var shasum = crypto.createHash('sha512');
 	var curTime = (Date.now() / 1000);
 
@@ -145,16 +153,17 @@ function id_gen(name) {
 	return shasum.digest('hex');
 }
 
-function generate_key(userInput, callback) {
+Setup.prototype.generate_key = function (userInput, callback) {
 	var options = {
 		numBits: 2048,
 		userId: userInput.name,
 		passphrase: 'super long and hard to guess secret'
 	};
 
-	console.log('NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
+	// console.log('NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
+	logger.log('info', 'NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
 
-	openpgp.generateKeyPair(options).then(function(keypair) {
+	openpgp.generateKeyPair(options).then(function (keypair) {
 		// Success
 		var privkey = keypair.privateKeyArmored;
 		var pubkey = keypair.publicKeyArmored;
@@ -172,8 +181,10 @@ function generate_key(userInput, callback) {
 			Public: path.join(__NW, 'conf/keys/SVR_PublicKey.pgp')
 		});
 
-	}).catch(function(error) {
+	}).catch(function (error) {
 		// Failure
 		console.log(error);
 	});
 }
+
+module.exports = Setup;

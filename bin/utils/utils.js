@@ -16,7 +16,5 @@ module.exports = {
 		load: {
 			config: require('./server/config-loader'),
 		},
-	},
-	mode: require('./Mode'),
-	config: require('./Config')
+	}
 };

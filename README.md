@@ -30,8 +30,8 @@ npm install
 
 | Desc               | Shorthand     | Full       | Arg / Options           |
 |:-------------------|---------------|------------|-------------------------|
-| Run Config Builder | `-c`          | `--config` | `client | server`       |
-| Start in mode      | `-m`          | `--mode`    | `client | server`      |
+| Run Config Builder | `-s`          | `--setup`  |  `client | server`      |
+| Start in mode      | `-m`          | `--mode`   |  `client | server`      |
 
 
 ---

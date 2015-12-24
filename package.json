@@ -1,6 +1,6 @@
 {
   "name": "nightwatch",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Node location monitor, status & relay.",
   "preferGlobal": "false",
   "bin": {
@@ -26,9 +26,9 @@
   "dependencies": {
     "body-parser": "^1.12.4",
     "cookie-parser": "^1.4.0",
-    "express": "~4.12.4",
+    "express": "~4.13.3",
     "express-session": "^1.12.1",
-    "knex": "^0.8.6",
+    "knex": "^0.9.0",
     "lokijs": "^1.3.10",
     "minimist": "^1.2.0",
     "multiline": "^1.0.2",

@@ -1,26 +1,26 @@
 #!/usr/bin/env node
-// #NightWatch
+// #TheWatcher
 // By #TheDoxMedia
 //
 
-var NightWatch = require('./app');
+var TheWatcher = require('./app');
 var minimist = require('minimist');
 var multiline = require('multiline');
 var packageJson = require('../package.json');
 // var child_process = require('child_process');
 
-process.title = 'NightWatch';
+process.title = 'TheWatcher';
 process.on('exit', function () {
-	console.log('NightWatch exiting..'.cyan);
+	console.log('TheWatcher exiting..'.cyan);
 });
 
-var app = new NightWatch;
+var app = new TheWatcher;
 var NW_MODE = undefined;
 // var NW_CONF_PATH = undefined;
 
 // Parse args
 // Args options for startup/mode
-// IF called via {nightwatch} -{s} -{arg}
+// IF called via {thewatcher} -{s} -{arg}
 var args = minimist(process.argv.slice(2), {
 	alias: {
 		m: 'mode',
@@ -36,7 +36,7 @@ var args = minimist(process.argv.slice(2), {
 if (args.setup) {
 	app.utils[args.setup].setup();
 }
-// Start NightWatch in requested mode
+// Start TheWatcher in requested mode
 else if (args.mode) {
 	NW_MODE = args.mode;
 
@@ -50,19 +50,19 @@ else{
 function fullText() {
 	console.log(multiline(function () {/*
    
-   NightWatch - %s
+   TheWatcher - %s
    
    ===============================================
    
-   Usage: nightwatch [switch] <opt>
+   Usage: thewatcher [switch] <opt>
    
    [switch] <opt>: 
       -m, --mode		<server|client>
       -s, --setup		<server|client>
 	  
    Examples:
-      nightwatch -m server	Start in server mode
-      nightwatch -s client	Interactive setup
+      thewatcher -m server	Start in server mode
+      thewatcher -s client	Interactive setup
    
 */}), packageJson.version);
 }

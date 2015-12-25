@@ -11,17 +11,17 @@ module.exports = function(keys) {
 	try {
 		// Check that key path is not empty
 		// if (keys.private.length) {
-		console.log('NightWatch >> Client >> PGP [Private] Key Loaded!'.green);
+		console.log('TheWatcher >> Client >> PGP [Private] Key Loaded!'.green);
 		_keys.private = loadKey(keys.private.path);
 
-		console.log('NightWatch >> Client >> PGP [Public] Key Loaded!'.green);
+		console.log('TheWatcher >> Client >> PGP [Public] Key Loaded!'.green);
 		_keys.public = loadKey(keys.public.path);
 
 		return _keys;
 		
 		// }
 	} catch (err) {
-		console.log('NightWatch >> Error >> '.red, err);
+		console.log('TheWatcher >> Error >> '.red, err);
 	}
 };
 

@@ -1,25 +1,25 @@
 {
-  "name": "nightwatch",
+  "name": "thewatcher",
   "version": "1.0.0",
   "description": "Node location monitor, status & relay.",
   "preferGlobal": "false",
   "bin": {
-    "nightwatch": "./bin/cmd.js"
+    "thewatcher": "./bin/cmd.js"
   },
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/test.js"
   },
   "keywords": [
-    "NightWatch",
+    "thewatcher",
     "TheDoxMedia"
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:TheDoxMedia/nightwatch.git"
+    "url": "git@github.com:TheDoxMedia/thewatcher.git"
   },
   "bugs": {
-    "url": "https://github.com/TheDoxMedia/nightwatch/issues"
+    "url": "https://github.com/TheDoxMedia/thewatcher/issues"
   },
   "author": "TheDoxMedia",
   "license": "MIT",

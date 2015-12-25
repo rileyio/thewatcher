@@ -1,10 +1,10 @@
 var assert = require('assert');
 var should = require('should');
-var NightWatch = require('../bin/app');
+var TheWatcher = require('../bin/app');
 var Utils = require('../bin/utils/utils');
 var path = require('path');
 
-describe('Test NightWatch', function () {
+describe('Test TheWatcher', function () {
 	process.env.NODE_ENV = 'test';
 
 	beforeEach(function () {
@@ -14,6 +14,6 @@ describe('Test NightWatch', function () {
 	it('start server mode', function(){
 		Utils.mode('server');			
 	})
-	// NightWatch.init();
+	// TheWatcher.init();
 	// });
 });

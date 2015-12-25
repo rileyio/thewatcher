@@ -1,9 +1,9 @@
-// #NightWatch
+// #TheWatcher
 // By #TheDoxMedia
 // Client.js
 // 
 // Client Spawner.. Used for spawning a new child to the
-// NightWatch server.
+// TheWatcher server.
 
 // var express = require('express');
 // var app = express();
@@ -58,7 +58,7 @@ exports.start = function (config) {
 		console.log('Error:', err);
 	});
 
-	console.log('NightWatch >> Client >> Started!'.green);
+	console.log('TheWatcher >> Client >> Started!'.green);
 
 	// });
 	

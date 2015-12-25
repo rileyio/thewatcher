@@ -102,7 +102,7 @@ function create_json(data) {
 			// Answering [y]es writes the client.json file
 			fs.writeFile(path.join(__NW, 'conf/client.json'), JSON.stringify(data, null, '\t'), function() {
 				if (err) throw err;
-				console.log('NightWatch >> Client :: CreateJSON >> client.json'.cyan);
+				console.log('TheWatcher >> Client :: CreateJSON >> client.json'.cyan);
 			});
 		}
 	});
@@ -127,10 +127,10 @@ function generate_key(userInput, callback) {
 	// var s = nodeSpinner();
 
 	// setInterval(function() {
-	// 	process.stdout.write('\r \033[36 NightWatch >> Client :: Setup >> Creating PGP Keys\033[m ' + s.next());
+	// 	process.stdout.write('\r \033[36 TheWatcher >> Client :: Setup >> Creating PGP Keys\033[m ' + s.next());
 	// }, 200);
 
-	console.log('NightWatch >> Client :: Setup >> Creating PGP Keys'.cyan);
+	console.log('TheWatcher >> Client :: Setup >> Creating PGP Keys'.cyan);
 
 	openpgp.generateKeyPair(options).then(function(keypair) {
 		// Success

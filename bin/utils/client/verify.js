@@ -17,7 +17,7 @@ module.exports = function(callback) {
 
 		// console.log(config.key);
 
-		console.log('NightWatch >> Client >> Config loaded!'.green);
+		console.log('TheWatcher >> Client >> Config loaded!'.green);
 
 		// Callback with Valid Config
 		callback(config);

@@ -1,10 +1,9 @@
-// #NightWatch
+// #TheWatcher
 // By #TheDoxMedia
 // Server.js
 // 
-// Server Spawner
 
-console.log('NightWatch >> Server :: Starting up..');
+console.log('TheWatcher >> Server :: Starting up..');
 
 var app = require('express')();
 var http = require('http').Server(app);
@@ -52,7 +51,7 @@ exports.start = function (config) {
 
 		// Good to listen
 		// Print successful startup
-		console.log('NightWatch >> Listening @ //%s:%s', host, port);
+		console.log('TheWatcher >> Listening @ //%s:%s', host, port);
 	});
 
 	////////////////////////////////////////////////////////////////
@@ -104,7 +103,7 @@ exports.start = function (config) {
 			
 			// Add client to heartbeats array
 			if (!inMemDB) {
-				console.log('NightWatch >> Server >> MemDB::Heartbeats(add:%s)', name);
+				console.log('TheWatcher >> Server >> MemDB::Heartbeats(add:%s)', name);
 
 				Heartbeats.insert({
 					name: name,

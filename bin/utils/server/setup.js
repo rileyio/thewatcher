@@ -71,7 +71,7 @@ module.exports = function (calling) {
 			dbName: {
 				description: 'Database name: '.yellow,
 				required: true,
-				default: 'nightwatch'
+				default: 'thewatcher'
 			},
 			dbUser: {
 				description: 'Database user: '.yellow,
@@ -126,7 +126,7 @@ function create_json(data) {
 			// Answering [y]es writes the server.json file
 			fs.writeFile(path.join(__NW, 'conf/server.json'), JSON.stringify(data, null, '\t'), function () {
 				if (err) throw err;
-				console.log('NightWatch >> Server :: CreateJSON >> server.json'.cyan);
+				console.log('TheWatcher >> Server :: CreateJSON >> server.json'.cyan);
 			});
 		}
 	});
@@ -148,7 +148,7 @@ function generate_key(userInput, callback) {
 		// passphrase: 'super long and hard to guess secret'
 	};
 
-	console.log('NightWatch >> Server :: Setup >> Creating PGP Keys..'.cyan);
+	console.log('TheWatcher >> Server :: Setup >> Creating PGP Keys..'.cyan);
 
 	openpgp.generateKeyPair(options).then(function (keypair) {
 		// Success

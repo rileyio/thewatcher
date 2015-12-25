@@ -15,6 +15,10 @@ A client to server monitoring tool (*Keeps watch over its clients through the ni
   will be errors / incomplete functionality.
 
 ```
+npm install thewatcher
+```
+ -or-
+```
 git clone https://github.com/TheDoxMedia/thewatcher.git
 ```
 

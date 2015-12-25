@@ -2,9 +2,8 @@ TheWatcher
 ==========
 A client to server monitoring tool (*Keeps watch over its clients through the night for you.*)
 
-  [![Dependency Status][david-dm-badge]][david-dm-url]
-  [![Code Climate][code-climate-badge]][code-climate-url]
-  [![NPM Version][npm-badge]][npm-url]
+[![NPM Version][npm-badge]][npm-url] [![Dependency Status][david-dm-badge]][david-dm-url] [![Code Climate][code-climate-badge]][code-climate-url]
+  
 ---
 
 ### # Setup

@@ -2,7 +2,9 @@ TheWatcher
 ==========
 A client to server monitoring tool (*Keeps watch over its clients through the night for you.*)
 
-[![Dependency Status](https://david-dm.org/thedoxmedia/thewatcher.svg?style=flat-square)](https://david-dm.org/thedoxmedia/thewatcher) [![Code Climate](https://img.shields.io/codeclimate/github/kabisaict/flow.svg?style=flat-square)](https://codeclimate.com/github/TheDoxMedia/thewatcher)
+  [![Dependency Status][david-dm-badge]][david-dm-url]
+  [![Code Climate][code-climate-badge]][code-climate-url]
+  [![NPM Version][npm-badge]][npm-url]
 ---
 
 ### # Setup
@@ -37,7 +39,7 @@ npm install
 ---
 
 ### # Versions
-##### 0.0.2
+##### 1.0.0
   - Rebuilding (Current Master/Dev Branches)
 
 ##### 0.0.1
@@ -46,3 +48,10 @@ npm install
     - Both Client and Server modes available (set in respective .json config file that's loaded in.)
     - Add and generate of clients can be performed using the `--add` mode of running thewatcher.
     - Checkins & Clients tracked via DB files.
+
+[npm-url]: https://www.npmjs.com/package/thewatcher
+[npm-badge]: https://img.shields.io/npm/v/thewatcher.svg?style=flat-square
+[code-climate-url]: https://codeclimate.com/github/TheDoxMedia/thewatcher
+[code-climate-badge]: https://img.shields.io/codeclimate/github/TheDoxMedia/thewatcher.svg?style=flat-square
+[david-dm-url]: https://david-dm.org/thedoxmedia/thewatcher
+[david-dm-badge]: https://img.shields.io/david/TheDoxMedia/thewatcher.svg?style=flat-square

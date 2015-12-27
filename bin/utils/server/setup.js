@@ -13,7 +13,8 @@ module.exports = function() {
 		callback = arguments[1];
 
 	// Check that no paramaters passed to setup func
-	if (!Object.keys(optional).length) {
+	// if (!Object.keys(optional).length) {
+	if (!optional) {
 		promptConfig(template);
 	}
 
@@ -68,7 +69,7 @@ function id_gen(name) {
 
 function generate_key(userInput, callback) {
 	var options = {
-		numBits: 1024,
+		numBits: 2048,
 		userId: userInput.name
 	};
 

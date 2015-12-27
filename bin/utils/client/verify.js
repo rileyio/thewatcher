@@ -7,7 +7,7 @@ module.exports = function(callback) {
 	
 	console.log('Checking for config file..'.grey);
 
-	fs.readFile(path.join(__NW, 'conf/client.json'), function(err, data) {
+	fs.readFile(path.join(__TW, 'conf/client.json'), function(err, data) {
 		if (err) throw err;
 		var config = JSON.parse(data.toString());
 

@@ -10,8 +10,8 @@ var Utils = require('./utils/utils');
 var TheWatcher = function () {
 	var self = this;
 	
-	// Set TheWatcher running Dir under __NW
-	global.__NW = path.resolve(__dirname + '/..');
+	// Set TheWatcher running Dir under __TW
+	global.__TW = path.resolve(__dirname + '/..');
 
 	// Check if TheWatcher was called via require('app')
 	// Or via $ thewatcher {args}

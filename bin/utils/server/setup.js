@@ -4,33 +4,100 @@ var fs = require('fs');
 var openpgp = require('openpgp');
 var path = require('path');
 
-module.exports = function (calling) {
-	var _server = {
-		name: '',
-		// version: NW.version,
-		id: '',
-		lat: '',
-		lon: '',
-		createTime: 0,
-		mode: 'server',
-		port: 3306,
-		key: {
-			public: {
-				path: undefined,
-			},
-			private: {
-				path: undefined,
+module.exports = function() {
+	// Load default config layout from template js
+	var template = require(path.join(
+		__TW, '/resources/server/templates/config'));
+
+	var optional = arguments[0],
+		callback = arguments[1];
+
+	// Check that no paramaters passed to setup func
+	if (!Object.keys(optional).length) {
+		promptConfig(template);
+	}
+
+	// If a custom config is passed, skip prompts
+	else {
+		generate_key(optional, function(ret) {
+			// Fillout template
+			template.id = id_gen(optional.name);
+			template.name = optional.name;
+			template.lat = optional.lat;
+			template.lon = optional.lon;
+			template.createTime = (Date.now() / 1000);
+			template.port = optional.port;
+			template.key.private.path = ret.Private;
+			template.key.public.path = ret.Public;
+
+			// Database
+			template.db.type = optional.db.type;
+			template.db.host = optional.db.host;
+			template.db.database = optional.db.database;
+			template.db.user = optional.db.user;
+			template.db.pass = optional.db.pass;
+
+			// With no error on key gen
+			if (!ret.message) {
+				create_json(template);
+				callback();
 			}
-		},
-		db: {
-			type: '',
-			host: '',
-			database: '',
-			user: '',
-			pass: ''
-		}
+			else{
+				callback(new Error(ret.message));
+			}
+
+		});
+	}
+}
+
+function create_json(data) {
+	return fs.writeFile(
+		path.join(__TW, 'conf/server.json'),
+		JSON.stringify(data, null, '\t')
+	);
+}
+
+function id_gen(name) {
+	var shasum = crypto.createHash('sha512');
+	var curTime = (Date.now() / 1000);
+
+	shasum.update(name + '_' + curTime);
+
+	return shasum.digest('hex');
+}
+
+function generate_key(userInput, callback) {
+	var options = {
+		numBits: 1024,
+		userId: userInput.name
 	};
 
+	openpgp.generateKeyPair(options)
+		.then(function(keypair) {
+			// Success
+			var privkey = keypair.privateKeyArmored;
+			var pubkey = keypair.publicKeyArmored;
+
+			// Save keys to files
+			// [PRI] {install}/conf/keys/SVR_PrivateKey.pgp
+			fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PrivateKey'), privkey);
+
+			// [PUB] {install}/conf/keys/SVR_PublicKey.pgp
+			fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PublicKey.pgp'), pubkey);
+
+			// Callback
+			callback({
+				Private: path.join(__TW, 'conf/keys/SVR_PrivateKey'),
+				Public: path.join(__TW, 'conf/keys/SVR_PublicKey.pgp')
+			});
+
+		})
+		.catch(function(err) {
+			callback(err);
+		});
+}
+
+function promptConfig(template) {
 	// Get user input
 	prompt.message = "";
 	prompt.delimiter = "";
@@ -83,93 +150,29 @@ module.exports = function (calling) {
 			}
 		},
 
-	}, function (err, userInput) {
+	}, function(err, userInput) {
 		// Start PGP Key gen
-		generate_key(userInput, function (PGPKeyPath) {
-			_server.id = id_gen(userInput.name);
-			_server.name = userInput.name;
-			_server.lat = userInput.lat;
-			_server.lon = userInput.lon;
-			_server.createTime = (Date.now() / 1000);
-			_server.port = userInput.port;
-			_server.key.private.path = PGPKeyPath.Private;
-			_server.key.public.path = PGPKeyPath.Public;
-			
+		console.log('TheWatcher >> Server :: Setup >> Creating PGP Keys..'.cyan);
+
+		generate_key(userInput, function(PGPKeyPath) {
+			// Fillout template
+			template.id = id_gen(userInput.name);
+			template.name = userInput.name;
+			template.lat = userInput.lat;
+			template.lon = userInput.lon;
+			template.createTime = (Date.now() / 1000);
+			template.port = userInput.port;
+			template.key.private.path = PGPKeyPath.Private;
+			template.key.public.path = PGPKeyPath.Public;
+
 			// Database
-			_server.db.type = userInput.dbType;
-			_server.db.host = userInput.dbHost;
-			_server.db.database = userInput.dbName;
-			_server.db.user = userInput.dbUser;
-			_server.db.pass = userInput.dbPass;
+			template.db.type = userInput.dbType;
+			template.db.host = userInput.dbHost;
+			template.db.database = userInput.dbName;
+			template.db.user = userInput.dbUser;
+			template.db.pass = userInput.dbPass;
 
-			create_json(_server);
+			create_json(template);
 		});
-	});
-}
-
-function create_json(data) {
-	prompt.message = "";
-	prompt.delimiter = "";
-	prompt.start();
-
-	// Ask user if they would like to generate a server.json
-	prompt.get({
-		properties: {
-			name: {
-				description: 'Generate a server.json file with the Name & ID [y|n] ? ',
-				pattern: /^(y|n)$/,
-				required: true
-			}
-		}
-	}, function (err, results) {
-		if (results.name.toLowerCase() == 'y') {
-			// Answering [y]es writes the server.json file
-			fs.writeFile(path.join(__NW, 'conf/server.json'), JSON.stringify(data, null, '\t'), function () {
-				if (err) throw err;
-				console.log('TheWatcher >> Server :: CreateJSON >> server.json'.cyan);
-			});
-		}
-	});
-}
-
-function id_gen(name) {
-	var shasum = crypto.createHash('sha512');
-	var curTime = (Date.now() / 1000);
-
-	shasum.update(name + '_' + curTime);
-
-	return shasum.digest('hex');
-}
-
-function generate_key(userInput, callback) {
-	var options = {
-		numBits: 2048,
-		userId: userInput.name,
-		// passphrase: 'super long and hard to guess secret'
-	};
-
-	console.log('TheWatcher >> Server :: Setup >> Creating PGP Keys..'.cyan);
-
-	openpgp.generateKeyPair(options).then(function (keypair) {
-		// Success
-		var privkey = keypair.privateKeyArmored;
-		var pubkey = keypair.publicKeyArmored;
-
-		// Save keys to files
-		// [PRI] {install}/conf/keys/SVR_PrivateKey.pgp
-		fs.writeFileSync(path.join(__NW, 'conf/keys/SVR_PrivateKey'), privkey);
-
-		// [PUB] {install}/conf/keys/SVR_PublicKey.pgp
-		fs.writeFileSync(path.join(__NW, 'conf/keys/SVR_PublicKey.pgp'), pubkey);
-
-		// Callback
-		callback({
-			Private: path.join(__NW, 'conf/keys/SVR_PrivateKey'),
-			Public: path.join(__NW, 'conf/keys/SVR_PublicKey.pgp')
-		});
-
-	}).catch(function (error) {
-		// Failure
-		console.log(error);
 	});
 }

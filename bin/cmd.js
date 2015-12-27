@@ -15,7 +15,7 @@ process.on('exit', function () {
 });
 
 var app = new TheWatcher;
-var NW_MODE = undefined;
+var TW_MODE = undefined;
 // var NW_CONF_PATH = undefined;
 
 // Parse args
@@ -38,9 +38,9 @@ if (args.setup) {
 }
 // Start TheWatcher in requested mode
 else if (args.mode) {
-	NW_MODE = args.mode;
+	TW_MODE = args.mode;
 
-	app[NW_MODE]();
+	app[TW_MODE]();
 }
 else{
 	// If no selection is made, return fullText()

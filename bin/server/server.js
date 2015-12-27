@@ -36,7 +36,7 @@ exports.start = function (config) {
 	// Listen for start of handshakes from clients
 	app.get('/', function (req, res) {
 		// Send local server monitoring panel
-		res.sendFile(__NW + '/resources/server/www/index.html');
+		res.sendFile(__TW + '/resources/server/www/index.html');
 		// if (!req.user) {
 		// 	res.send(401);
 		// } else {

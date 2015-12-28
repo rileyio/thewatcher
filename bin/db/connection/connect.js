@@ -11,5 +11,16 @@ module.exports = function (config) {
 		}
 	});
 
+	connection.raw('SELECT 1+1 AS result')
+		.return() // Return if not any errors
+		.then(function(){
+			console.log('TheWatcher >> Server >> DB::Connected!'.green)
+		})
+		.catch(function (err) {
+			console.log('Check DB credentials/connection'.red);
+			process.exit(1)
+		})
+
 	return connection;
+
 }

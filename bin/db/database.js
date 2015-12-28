@@ -1,4 +1,4 @@
-var Client = require('./queries/client');
+var ClientQueries = require('./queries/client');
 
 var Database = function (config) {
 	var self = this;
@@ -6,7 +6,8 @@ var Database = function (config) {
 	self.config = config;
 	self.DB = require('./connection/connect')(self.config);
 
-	self.client = new Client(self.DB);
+	// Options ( DB.client.add, DB.server.. )
+	self.client = new ClientQueries(self.DB);
 }
 
 module.exports = Database;

@@ -38,7 +38,7 @@ module.exports = function(type){
 			process.exit(0);
 		}
 		else{
-			console.log('err', error.red);
+			console.log('err'.red, error);
 		}
 	}
 

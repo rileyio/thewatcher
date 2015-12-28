@@ -50,4 +50,27 @@ Client.prototype.update = function (data) {
 		});
 };
 
+Client.prototype.add = function (data) {
+	var self = this;
+
+	console.log('TheWatcher >> Server >> DB::Client(add:%s)'.yellow, data.name);
+
+	self.DB('clients')
+		.insert({
+			name: data.name,
+			pubkey: data.pubkey
+		})
+		.then(function (ret) {
+			if (ret) {
+				console.log('TheWatcher >> Server >> DB::Client(add:%s)->Success'.green, data.name);
+			}
+			else {
+				console.log('TheWatcher >> Server >> DB::Client(add:%s)->Failed'.red, data.name);
+			}
+			
+			// Return lookup data (No callback)
+			return ret;
+		});
+};
+
 module.exports = Client;

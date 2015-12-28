@@ -8,6 +8,7 @@
 var path = require('path');
 var extend = require('xtend');
 var Utils = require('./utils/utils');
+var Manage = require('./utils/toolbox/manage');
 
 var TheWatcher = function () {
 	var self = this;
@@ -23,7 +24,10 @@ var TheWatcher = function () {
 	self.config = {
 		silent: false
 	};
+	
+	// Extend
 	self.utils = Utils;
+	self.manage = new Manage;
 }
 
 TheWatcher.prototype.client = function () {

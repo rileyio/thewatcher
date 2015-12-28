@@ -5,6 +5,7 @@
 // 
 // Running: node index.js -c <path to config file>
 var path = require('path');
+var extend = require('xtend');
 var Utils = require('./utils/utils');
 
 var TheWatcher = function () {
@@ -18,7 +19,9 @@ var TheWatcher = function () {
 	self.cmd = (require.main);
 	
 	self.mode = undefined;
-	self.conf = {};
+	self.config = {
+		silent: false
+	};
 	self.utils = Utils;
 }
 
@@ -34,8 +37,13 @@ TheWatcher.prototype.client = function(){
 };
 
 TheWatcher.prototype.server = function(){
+	var self = this;
+	
+	// Load server config
+	self.config = extend(Utils.server.load.config(), self.config);
+
 	// Load server config JSON & pass to Server Core
-	require('./server/server').start(Utils.server.load.config());
+	require('./server/server').start(self.config);
 }
 
 module.exports = TheWatcher;

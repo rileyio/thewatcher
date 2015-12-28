@@ -9,7 +9,6 @@ var multiline = require('multiline');
 var packageJson = require('../package.json');
 // var child_process = require('child_process');
 
-process.title = 'TheWatcher';
 process.on('exit', function () {
 	console.log('TheWatcher exiting..'.cyan);
 });
@@ -38,6 +37,7 @@ if (args.setup) {
 }
 // Start TheWatcher in requested mode
 else if (args.mode) {
+	process.title = 'TheWatcher - ' + args.mode;
 	TW_MODE = args.mode;
 
 	app[TW_MODE]();

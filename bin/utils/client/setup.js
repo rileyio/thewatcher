@@ -5,6 +5,10 @@ var openpgp = require('openpgp');
 var path = require('path');
 
 module.exports = function(calling) {
+	// Load default config layout from template js
+	// var template = require(path.join(
+		// __TW, '/resources/client/templates/config'));
+	
 	var _client = {
 		name: '',
 		id: '',
@@ -120,15 +124,8 @@ function id_gen(name) {
 function generate_key(userInput, callback) {
 	var options = {
 		numBits: 2048,
-		userId: userInput.name,
-		// passphrase: 'super long and hard to guess secret'
+		userId: userInput.name
 	};
-
-	// var s = nodeSpinner();
-
-	// setInterval(function() {
-	// 	process.stdout.write('\r \033[36 TheWatcher >> Client :: Setup >> Creating PGP Keys\033[m ' + s.next());
-	// }, 200);
 
 	console.log('TheWatcher >> Client :: Setup >> Creating PGP Keys'.cyan);
 

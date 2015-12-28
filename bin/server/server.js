@@ -3,8 +3,6 @@
 // Server.js
 // 
 
-console.log('TheWatcher >> Server :: Starting up..');
-
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -33,6 +31,8 @@ exports.start = function (config) {
 		connected: 0
 	};
 
+	var silent = config.silent;
+	
 	// Listen for start of handshakes from clients
 	app.get('/', function (req, res) {
 		// Send local server monitoring panel
@@ -51,7 +51,10 @@ exports.start = function (config) {
 
 		// Good to listen
 		// Print successful startup
-		console.log('TheWatcher >> Listening @ //%s:%s', host, port);
+		if (!silent) {
+			console.log('TheWatcher >> Listening @ //%s:%s'.green, host, port);
+		}
+		// console.log(args)
 	});
 
 	////////////////////////////////////////////////////////////////
@@ -103,7 +106,9 @@ exports.start = function (config) {
 			
 			// Add client to heartbeats array
 			if (!inMemDB) {
-				console.log('TheWatcher >> Server >> MemDB::Heartbeats(add:%s)', name);
+				if (!silent) {
+					console.log('TheWatcher >> Server >> MemDB::Heartbeats(add:%s)', name);
+				}
 
 				Heartbeats.insert({
 					name: name,

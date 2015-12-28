@@ -4,6 +4,7 @@
 // Main js file for loading the project.
 // 
 // Running: node index.js -c <path to config file>
+
 var path = require('path');
 var extend = require('xtend');
 var Utils = require('./utils/utils');
@@ -17,7 +18,7 @@ var TheWatcher = function () {
 	// Check if TheWatcher was called via require('app')
 	// Or via $ thewatcher {args}
 	self.cmd = (require.main);
-	
+
 	self.mode = undefined;
 	self.config = {
 		silent: false
@@ -25,22 +26,29 @@ var TheWatcher = function () {
 	self.utils = Utils;
 }
 
-TheWatcher.prototype.client = function(){
-	Utils.client.verify(function(validConfig) {
+TheWatcher.prototype.client = function () {
+	var self = this;
+
+	if (!self.config.silent) {
 		console.log('TheWatcher >> Client >> Starting..'.yellow);
+	}
 
-		// Load Client.js File
-		var Client = require('./client/client');
+	// Load server config
+	self.config = extend(Utils.server.load.config('client'), self.config);
 
-		Client.start(validConfig);
-	});
+	// Load client config JSON & pass to Client Core
+	require('./client/client').start(self.config);
 };
 
-TheWatcher.prototype.server = function(){
+TheWatcher.prototype.server = function () {
 	var self = this;
+
+	if (!self.config.silent) {
+		console.log('TheWatcher >> Server >> Starting..'.yellow);
+	}
 	
 	// Load server config
-	self.config = extend(Utils.server.load.config(), self.config);
+	self.config = extend(Utils.server.load.config('server'), self.config);
 
 	// Load server config JSON & pass to Server Core
 	require('./server/server').start(self.config);

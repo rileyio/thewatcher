@@ -5,9 +5,6 @@
 // Client Spawner.. Used for spawning a new child to the
 // TheWatcher server.
 
-// var express = require('express');
-// var app = express();
-// var bodyParser = require('body-parser');
 var io = require('socket.io-client');
 var os = require('os');
 
@@ -18,8 +15,7 @@ exports.start = function (config) {
 	var socket = io.connect('http://' + config.server, {
 		'forceNew': true,
 	});
-	
-
+		
 	socket.on('connect', function (sio) {
 		var prepMsg = JSON.stringify({
 			session: socket.id,

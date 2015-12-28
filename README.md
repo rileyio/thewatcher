@@ -30,13 +30,77 @@ npm install
 
 ---
 
-### # Running / Commands
+### # Running via cmd / shell
 > All commands starting with `node index.js`
 
-| Desc               | Shorthand     | Full       | Arg / Options           |
-|:-------------------|---------------|------------|-------------------------|
-| Run Config Builder | `-s`          | `--setup`  |  `client | server`      |
-| Start in mode      | `-m`          | `--mode`   |  `client | server`      |
+| Desc               | Shorthand     | Full       | Arg / Options            |
+|:-------------------|---------------|------------|--------------------------|
+| Run Config Builder | `-s`          | `--setup`  |  `client | server`       |
+| Start in mode      | `-m`          | `--mode`   |  `client | server`       |
+| Add a client       | `-a`          | `--add`    |  `client` `/path/to/json`|
+| Export client conf |               | `--export` |  `client` `/path/to/save`|
+
+
+#### Config builder
+
+Running config builder mode via command line will prompt the user
+for various items such as Name, Location of server, port to listen on, and
+database connection information.
+
+```bash
+# Example for setting up server
+thewatcher -s server
+
+# For client
+thewatcher -s client
+```
+
+
+#### Start in mode
+
+Starts TheWatcher in the specified mode, the application will
+check the default location (`./conf/`) for the client -or- server's {config}.json
+and generated pgp keys. Once loaded the application begin listening or connect to
+the specified server and emit back (client to server) its current running details
+& stats.
+
+```bash
+# Example
+thewatcher -m server
+```
+
+
+#### Add a client
+
+Adds the supplied client's configuration & [Public] pgp key to the server's Database.
+The server's Database is used to track and authenticate its clients.
+
+```bash
+# Example
+thewatcher -a /path/to/client.json
+```
+
+
+#### Export client config
+
+Exports the current client config (from `./conf/client.json`) to the specified
+save path.
+
+> **Note**: The default `/conf/client.json` does not store the client's pgp keys
+rather it stores the location of the keys and on mode startup these paths are
+used to load the client key's data. Exporting replaces the paths with the key
+contents for better portability and for importing later at the server.
+
+```bash
+# Example
+thewatcher --export /path/to/save/
+```
+
+---
+
+
+### # Usage via `require('thewatcher')`
+
 
 
 ---

@@ -8,11 +8,11 @@ module.exports = {
 
 	// Client Latitude
 	lat: undefined,
-	
+
 	// Client Longitude
 	lon: undefined,
 
-	// Host/IP/Addr to the server
+	// Home server (to call back to)
 	server: undefined,
 
 	// UNIX timestamp of client creation
@@ -21,10 +21,11 @@ module.exports = {
 	// Basic Mode string
 	mode: 'client',
 
-	// [Deprecated] Communication port
-	// port: 0,
-	
-	// PGP Key path (Generated during `node index.js -c client`)
+	// Port for listening
+	// Default: 3306
+	port: 3306,
+
+	// PGP Key path (Generated during `node index.js -s server`)
 	key: {
 		public: {
 			path: undefined,

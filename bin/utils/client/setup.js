@@ -4,31 +4,100 @@ var fs = require('fs');
 var openpgp = require('openpgp');
 var path = require('path');
 
-module.exports = function(calling) {
+module.exports = function (calling) {
 	// Load default config layout from template js
-	// var template = require(path.join(
-		// __TW, '/resources/client/templates/config'));
+	var template = require(path.join(
+		__TW, '/resources/client/templates/config'));
+
+	var optional = arguments[0],
+		callback = arguments[1];
+
+	// Check that no paramaters passed to setup func
+	// if (!Object.keys(optional).length) {
+	if (!optional) {
+		promptConfig(template);
+	}
 	
-	var _client = {
-		name: '',
-		id: '',
-		lat: '',
-		lon: '',
-		server: '',
-		createTime: 0,
-		mode: 'client',
-		// port: 0,
-		valid: true,
-		key: {
-			public: {
-				path: undefined,
-			},
-			private: {
-				path: undefined,
+	// If a custom config is passed, skip prompts
+	else {
+		generate_key(optional, function (ret) {
+			// Fillout template
+			template.id = id_gen(optional.name);
+			template.name = optional.name;
+			template.lat = optional.lat;
+			template.lon = optional.lon;
+			template.createTime = (Date.now() / 1000);
+			template.port = optional.port;
+			template.key.private.path = ret.Private;
+			template.key.public.path = ret.Public;
+
+			// Database
+			template.db.type = optional.db.type;
+			template.db.host = optional.db.host;
+			template.db.database = optional.db.database;
+			template.db.user = optional.db.user;
+			template.db.pass = optional.db.pass;
+
+			// With no error on key gen
+			if (!ret.message) {
+				create_json(template);
+				callback();
 			}
-		}
+			else {
+				callback(new Error(ret.message));
+			}
+
+		});
+	}
+}
+
+function create_json(data) {
+	return fs.writeFile(
+		path.join(__TW, 'conf/client.json'),
+		JSON.stringify(data, null, '\t')
+		);
+}
+
+function id_gen(name) {
+	var shasum = crypto.createHash('sha512');
+	var curTime = (Date.now() / 1000);
+
+	shasum.update(name + '_' + curTime);
+
+	return shasum.digest('hex');
+}
+
+function generate_key(userInput, callback) {
+	var options = {
+		numBits: 2048,
+		userId: userInput.name
 	};
 
+	openpgp.generateKeyPair(options)
+		.then(function (keypair) {
+			// Success
+			var privkey = keypair.privateKeyArmored;
+			var pubkey = keypair.publicKeyArmored;
+
+			// Save keys to files
+			// [PRI] {install}/conf/keys/PrivateKey.pgp
+			fs.writeFileSync(path.join(__TW, 'conf/keys/PrivateKey'), privkey);
+
+			// [PUB] {install}/conf/keys/PublicKey.pgp
+			fs.writeFileSync(path.join(__TW, 'conf/keys/PublicKey.pgp'), pubkey);
+
+			// Callback
+			callback({
+				Private: path.join(__TW, 'conf/keys/PrivateKey'),
+				Public: path.join(__TW, 'conf/keys/PublicKey.pgp')
+			});
+		})
+		.catch(function (err) {
+			console.log(err);
+		});
+}
+
+function promptConfig(template) {
 	// Get user input
 	prompt.message = "";
 	prompt.delimiter = "";
@@ -69,86 +138,23 @@ module.exports = function(calling) {
 			}
 		},
 
-	}, function(err, userInput) {
+	}, function (err, userInput) {
 		// Start PGP Key gen
-		generate_key(userInput, function(PGPKeyPath) {
-			_client.id = id_gen(userInput.name);
-			_client.name = userInput.name;
-			_client.lat = userInput.lat;
-			_client.lon = userInput.lon;
-			_client.createTime = (Date.now() / 1000);
-			// _client.port = userInput.port;
-			_client.server = userInput.server;
-			_client.key.private.path = PGPKeyPath.Private;
-			_client.key.public.path = PGPKeyPath.Public;
+		console.log('TheWatcher >> Server :: Setup >> Creating PGP Keys..'.cyan);
+		
+		// Start PGP Key gen
+		generate_key(userInput, function (PGPKeyPath) {
+			template.id = id_gen(userInput.name);
+			template.name = userInput.name;
+			template.lat = userInput.lat;
+			template.lon = userInput.lon;
+			template.createTime = (Date.now() / 1000);
+			// template.port = userInput.port;
+			template.server = userInput.server;
+			template.key.private.path = PGPKeyPath.Private;
+			template.key.public.path = PGPKeyPath.Public;
 
-			create_json(_client);
+			create_json(template);
 		});
-	});
-}
-
-function create_json(data) {
-	prompt.message = "";
-	prompt.delimiter = "";
-	prompt.start();
-
-	// Ask user if they would like to generate a client.json
-	prompt.get({
-		properties: {
-			name: {
-				description: 'Generate a client.json file with the Name & ID [y|n] ? ',
-				pattern: /^(y|n)$/,
-				required: true
-			}
-		}
-	}, function(err, results) {
-		if (results.name.toLowerCase() == 'y') {
-			// Answering [y]es writes the client.json file
-			fs.writeFile(path.join(__TW, 'conf/client.json'), JSON.stringify(data, null, '\t'), function() {
-				if (err) throw err;
-				console.log('TheWatcher >> Client :: CreateJSON >> client.json'.cyan);
-			});
-		}
-	});
-}
-
-function id_gen(name) {
-	var shasum = crypto.createHash('sha512');
-	var curTime = (Date.now() / 1000);
-
-	shasum.update(name + '_' + curTime);
-
-	return shasum.digest('hex');
-}
-
-function generate_key(userInput, callback) {
-	var options = {
-		numBits: 2048,
-		userId: userInput.name
-	};
-
-	console.log('TheWatcher >> Client :: Setup >> Creating PGP Keys'.cyan);
-
-	openpgp.generateKeyPair(options).then(function(keypair) {
-		// Success
-		var privkey = keypair.privateKeyArmored;
-		var pubkey = keypair.publicKeyArmored;
-
-		// Save keys to files
-		// [PRI] {install}/conf/keys/PrivateKey.pgp
-		fs.writeFileSync(path.join(__TW, 'conf/keys/PrivateKey'), privkey);
-
-		// [PUB] {install}/conf/keys/PublicKey.pgp
-		fs.writeFileSync(path.join(__TW, 'conf/keys/PublicKey.pgp'), pubkey);
-
-		// Callback
-		callback({
-			Private: path.join(__TW, 'conf/keys/PrivateKey'),
-			Public: path.join(__TW, 'conf/keys/PublicKey.pgp')
-		});
-
-	}).catch(function(error) {
-		// Failure
-		console.log(error);
 	});
 }

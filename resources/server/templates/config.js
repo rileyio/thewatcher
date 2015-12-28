@@ -1,18 +1,18 @@
-// Default Client Config
+// Default Server Config
 module.exports = {
-	// Human Name for the client
+	// Human Name for the Server
 	name: undefined,
 
 	// A sha512 combining the current time and name
 	id: undefined,
 
-	// Client Latitude
+	// Server Latitude
 	lat: undefined,
 
-	// Client Longitude
+	// Server Longitude
 	lon: undefined,
 
-	// UNIX timestamp of client creation
+	// UNIX timestamp of Server creation
 	createTime: 0,
 
 	// Basic Mode string

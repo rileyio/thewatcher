@@ -14,7 +14,7 @@ process.on('exit', function () {
 	console.log('TheWatcher exiting..'.cyan);
 });
 
-var app = new TheWatcher;
+var App = new TheWatcher;
 var TW_MODE = undefined;
 // var NW_CONF_PATH = undefined;
 
@@ -29,6 +29,7 @@ var args = minimist(process.argv.slice(2), {
 	},
 	string: [
 		'add',
+		'export',
 		'mode',
 		'setup'
 	]
@@ -36,18 +37,21 @@ var args = minimist(process.argv.slice(2), {
 
 // Setup a client or server & setup its {type}.json
 if (args.setup) {
-	app.utils[args.setup].setup();
+	App.utils[args.setup].setup();
 }
 // Start TheWatcher in requested mode
 else if (args.mode) {
 	TW_MODE = args.mode;
 
-	app[TW_MODE]();
+	App[TW_MODE]();
 }
-else if (args.add){
-	app.manage.addClient(args);
+else if (args.add) {
+	App.manage.addClient(args);
 }
-else{
+else if (args.export) {
+	App.manage.exportClientConf(args);
+}
+else {
 	// If no selection is made, return fullText()
 	fullText();
 }
@@ -65,6 +69,7 @@ function fullText() {
       -a, --add			<client> <path_to_config>
       -m, --mode		<server|client>
       -s, --setup		<server|client>
+	  --export			<client> <path_to_save>
 	  
    Examples:
       thewatcher -m server	Start in server mode

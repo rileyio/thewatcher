@@ -46,7 +46,7 @@ else if (args.mode) {
 	App[TW_MODE]();
 }
 else if (args.add) {
-	App.manage.addClient(args);
+	App.manage.addClient(args.add);
 }
 else if (args.export) {
 	App.manage.exportClientConf(args);

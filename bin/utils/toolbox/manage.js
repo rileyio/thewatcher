@@ -13,16 +13,18 @@ var Manage = function () {
 	self.DB = new Database(config.db);
 };
 
-Manage.prototype.addClient = function (args) {
+Manage.prototype.addClient = function (confPath) {
 	var self = this;
-	
+
 	// Load client.json
-	var clientConfig = Utils.client.load.config('client', args._);
+	var clientConfig = Utils.client.load.config('client', confPath);
 
 	self.DB.client.add({
 		name: clientConfig.name,
 		pubkey: clientConfig.key.public
 	})
+	
+	process.exit(0);
 };
 
 Manage.prototype.exportClientConf = function (args) {

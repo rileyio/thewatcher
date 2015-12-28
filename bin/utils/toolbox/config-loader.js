@@ -4,6 +4,8 @@ var path = require('path');
 
 module.exports = function(type){
 	var configPath = undefined;
+	
+	// Optional path w/override to default ./conf/{type}.json
 	var optPath = (arguments[1] !== undefined ? arguments[1][0] : undefined);
 	
 	// Default config location and name based off type
@@ -11,8 +13,14 @@ module.exports = function(type){
 	
 	// Optional override of configPath if arguments[1] is set.
 	// Set config path
-	configPath = (optPath === undefined ? defaultPath : optPath);
-	console.log('configPath',configPath)
+	configPath = path.resolve(optPath === undefined ? defaultPath : optPath);
+
+	// Check if {type}.json is already in path
+	if (!/^(.*\.json)$/i.test(configPath)){
+		// Update path to incluse {type}.json
+		configPath = path.join(configPath, type + '.json');
+	}
+	
 	// Wrapped in try to throw config loading error if files does not exist.
 	try {
 		var config = fs.readFileSync(configPath);

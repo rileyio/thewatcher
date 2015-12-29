@@ -74,8 +74,16 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Project files to exclude
+# =========================
+
 # Config file
 conf/*.json
+knexfile.js
+
+# Temp files
+*.db
+*.sqlite3
 
 # Keys
 conf/keys/*

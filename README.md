@@ -14,11 +14,14 @@ A client to server monitoring tool (*Keeps watch over its clients through the ni
   If you wish to try an experimental / dev branch checkout be aware, there
   will be errors / incomplete functionality.
 
-```
+```bash
+# Installing the latest from NPM
 npm install thewatcher
-```
- -or-
-```
+
+# Optionally installing to access globally
+npm install thewatcher -g
+
+# To get the latest on GitHub
 git clone https://github.com/TheDoxMedia/thewatcher.git
 ```
 
@@ -37,7 +40,7 @@ npm install
 |:-------------------|---------------|------------|--------------------------|
 | Run Config Builder | `-s`          | `--setup`  |  `client | server`       |
 | Start in mode      | `-m`          | `--mode`   |  `client | server`       |
-| Add a client       | `-a`          | `--add`    |  `client` `/path/to/json`|
+| Add a client       | `-a`          | `--add`    |  `/path/to/json`         |
 | Export client conf |               | `--export` |  `client` `/path/to/save`|
 
 
@@ -76,7 +79,7 @@ Adds the supplied client's configuration & [Public] pgp key to the server's Data
 The server's Database is used to track and authenticate its clients.
 
 ```bash
-# Example
+# Example (Note: Without the type, this is contained in the {type}.json file)
 thewatcher -a /path/to/client.json
 ```
 

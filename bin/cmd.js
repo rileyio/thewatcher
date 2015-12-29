@@ -28,6 +28,7 @@ var args = minimist(process.argv.slice(2), {
 		s: 'setup'
 	},
 	string: [
+		'db',
 		'add',
 		'export',
 		'mode',
@@ -42,18 +43,38 @@ if (args.setup) {
 // Start TheWatcher in requested mode
 else if (args.mode) {
 	TW_MODE = args.mode;
-
 	App[TW_MODE]();
 }
 else if (args.add) {
-	App.manage.addClient(args.add);
+	var AppManage = new App.Manage();
+	AppManage.addClient(args.add);
 }
 else if (args.export) {
-	App.manage.exportClientConf(args);
+	var AppManage = new App.Manage();
+	AppManage.exportClientConf(args);
+}
+else if (args.db) {
+	extendedUtils(args.db)
 }
 else {
+	console.log(args)
+	
 	// If no selection is made, return fullText()
 	fullText();
+}
+
+function extendedUtils(dbArg) {
+	var AppManage = new App.Manage();
+	
+	switch (dbArg) {
+		case 'setup':
+			AppManage.dbSetup();
+			break;
+
+		default:
+			console.log('Check available options for --db');
+			break;
+	}
 }
 
 function fullText() {
@@ -69,12 +90,12 @@ function fullText() {
       -a, --add			<client> <path_to_config>
       -m, --mode		<server|client>
       -s, --setup		<server|client>
-	  --export			<client> <path_to_save>
+	  --export	    	<client> <path_to_save>
 	  
    Examples:
       thewatcher -m server	Start in server mode
       thewatcher -s client	Interactive setup
-      thewatcher -a /path/to/client.json
+      thewatcher -a       	/path/to/client.json
    
 */}), packageJson.version);
 }

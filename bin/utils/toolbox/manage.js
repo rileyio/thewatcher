@@ -7,14 +7,16 @@ var Manage = function () {
 	var self = this;
 	
 	// Load server config to access DB
-	var config = Utils.server.load.config('server');
+	self.config = Utils.server.load.config('server');
 	
 	// Setup Primary DB
-	self.DB = new Database(config.db);
+	// self.DB = new Database(self.config.db);
 };
 
 Manage.prototype.addClient = function (confPath) {
 	var self = this;
+	// Setup Primary DB
+	self.DB = new Database(self.config.db);
 
 	// Load client.json
 	var clientConfig = Utils.client.load.config('client', confPath);
@@ -22,9 +24,9 @@ Manage.prototype.addClient = function (confPath) {
 	self.DB.client.add({
 		name: clientConfig.name,
 		pubkey: clientConfig.key.public
-	})
-	
-	process.exit(0);
+	}, function (ret) {
+		process.exit(0);
+	});
 };
 
 Manage.prototype.exportClientConf = function (args) {
@@ -43,5 +45,13 @@ Manage.prototype.exportClientConf = function (args) {
 		process.exit(0);
 	});
 };
+
+Manage.prototype.dbSetup = function () {
+	var self = this;
+	
+	// Setup Primary DB
+	self.DB = new Database(self.config.db);
+	self.DB.setup()
+}
 
 module.exports = Manage;

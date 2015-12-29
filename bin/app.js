@@ -27,7 +27,7 @@ var TheWatcher = function () {
 	
 	// Extend
 	self.utils = Utils;
-	self.manage = new Manage;
+	self.manage = self.Manage = Manage;
 }
 
 TheWatcher.prototype.client = function () {

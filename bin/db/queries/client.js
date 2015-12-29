@@ -50,7 +50,7 @@ Client.prototype.update = function (data) {
 		});
 };
 
-Client.prototype.add = function (data) {
+Client.prototype.add = function (data, callback) {
 	var self = this;
 
 	console.log('TheWatcher >> Server >> DB::Client(add:%s)'.yellow, data.name);
@@ -68,8 +68,8 @@ Client.prototype.add = function (data) {
 				console.log('TheWatcher >> Server >> DB::Client(add:%s)->Failed'.red, data.name);
 			}
 			
-			// Return lookup data (No callback)
-			return ret;
+			// Return insert pkey value on successful
+			return callback(ret);
 		});
 };
 

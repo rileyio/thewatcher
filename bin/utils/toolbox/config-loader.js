@@ -13,8 +13,8 @@ module.exports = function (type) {
 	
 	// Optional override of configPath if arguments[1] is set.
 	// Set config path
-	configPath = path.resolve(optPath === undefined ? defaultPath : optPath);
-
+	configPath = (optPath === undefined ? defaultPath : optPath);
+	
 	// Check if {type}.json is already in path
 	if (!/^(.*\.json)$/i.test(configPath)) {
 		// Update path to incluse {type}.json

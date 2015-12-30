@@ -13,7 +13,7 @@ module.exports = {
 	lon: undefined,
 
 	// UNIX timestamp of Server creation
-	createTime: 0,
+	created_at: 0,
 
 	// Basic Mode string
 	mode: 'server',

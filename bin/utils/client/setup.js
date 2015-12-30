@@ -26,7 +26,7 @@ module.exports = function (calling) {
 			template.name = optional.name;
 			template.lat = optional.lat;
 			template.lon = optional.lon;
-			template.createTime = (Date.now() / 1000);
+			template.created_at = Date.now();
 			template.port = optional.port;
 			template.key.private.path = ret.Private;
 			template.key.public.path = ret.Public;
@@ -148,7 +148,7 @@ function promptConfig(template) {
 			template.name = userInput.name;
 			template.lat = userInput.lat;
 			template.lon = userInput.lon;
-			template.createTime = (Date.now() / 1000);
+			template.created_at = Date.now();
 			// template.port = userInput.port;
 			template.server = userInput.server;
 			template.key.private.path = PGPKeyPath.Private;

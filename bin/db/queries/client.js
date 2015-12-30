@@ -35,7 +35,8 @@ Client.prototype.update = function (data) {
 	self.DB('clients')
 		.where('name', data.name)
 		.update({
-			session: data.session
+			session: data.session,
+			updated_at: self.DB.fn.now()
 		})
 		.then(function (ret) {
 			if (ret) {
@@ -58,7 +59,12 @@ Client.prototype.add = function (data, callback) {
 	self.DB('clients')
 		.insert({
 			name: data.name,
-			pubkey: data.pubkey
+			sha_id: data.id,
+			type: data.mode,
+			latitude: data.lat,
+			longitude: data.lon,
+			created_at: new Date(data.created_at),
+			pubkey: data.key.public
 		})
 		.then(function (ret) {
 			if (ret) {

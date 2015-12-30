@@ -16,7 +16,7 @@ module.exports = {
 	server: undefined,
 
 	// UNIX timestamp of client creation
-	createTime: 0,
+	created_at: 0,
 
 	// Basic Mode string
 	mode: 'client',

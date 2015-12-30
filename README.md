@@ -1,6 +1,6 @@
 TheWatcher
 ==========
-A client to server monitoring tool (*Keeps watch over its clients through the night for you.*)
+A client / server monitoring tool (*Previously named: NightWatch; Keeps watch over its clients through the night*)
 
 [![NPM Version][npm-badge]][npm-url] [![Dependency Status][david-dm-badge]][david-dm-url] [![Code Climate][code-climate-badge]][code-climate-url]
 
@@ -45,6 +45,7 @@ npm install
 | Start in mode      | `-m`          | `--mode`   |  `client | server`       |
 | Add a client       | `-a`          | `--add`    |  `/path/to/json`         |
 | Export client conf |               | `--export` |  `client` `/path/to/save`|
+| Database *         |               | `--db`     |  `*<check opts below>`   |
 
 
 #### Config builder
@@ -102,6 +103,20 @@ contents for better portability and for importing later at the server.
 thewatcher --export /path/to/save/
 ```
 
+#### Database
+
+Helpers to setup and manage the database.
+
+> **Note**: The default `/conf/server.json` is needed in order for these helpers
+to setup & communicate with the database (as the server's DB credentials are stored
+inside this config file.
+
+```bash
+# Example - Migrate the initial DB structure (createTableIfNotExists)
+thewatcher --db setup
+```
+
+
 ---
 
 
@@ -112,8 +127,21 @@ thewatcher --export /path/to/save/
 ---
 
 ### # Versions
-##### 1.0.0
-  - Rebuilding (Current Master/Dev Branches)
+##### 1.0.0 - `** Rebuilding (Current Master/Dev Branches) **`
+  - Rebuild from demo/concept (0.0.1 => 1.0.0).
+      - Memory DB for storing heartbeat/client current data.
+      - MySQL (See docs for supported) DB for storing clients.
+      - Database migrations.
+      - Better Client & Server config generate.
+      - PGP keys on client used to help verify data sent to server.
+      - Client config & key exporting.
+      - Redone client authentication.
+      - Better command line support & options.
+      - Available via npm.
+      - WebSocket for client <=> server data vs restful from 0.0.1.
+      - Some initial support/testin for thewatcher-gui. (More to come)
+      - Rename from NightWatch to TheWatcher.
+        
 
 ##### 0.0.1
   - Initial release.

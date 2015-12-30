@@ -21,10 +21,7 @@ Manage.prototype.addClient = function (confPath) {
 	// Load client.json
 	var clientConfig = Utils.client.load.config('client', confPath);
 
-	self.DB.client.add({
-		name: clientConfig.name,
-		pubkey: clientConfig.key.public
-	}, function (ret) {
+	self.DB.client.add(clientConfig, function (ret) {
 		process.exit(0);
 	});
 };

@@ -1,91 +1,85 @@
 // #TheWatcher
 // By #TheDoxMedia
 // Client.js
-// 
+//
 // Client Spawner.. Used for spawning a new child to the
 // TheWatcher server.
 
-var io = require('socket.io-client');
-var os = require('os');
+var io = require('socket.io-client')
+var os = require('os')
 
-var Utils = require('./../utils/Utils');
-
+var Utils = require('./../utils/Utils')
 
 exports.start = function (config) {
-	var socket = io.connect('http://' + config.server, {
-		'forceNew': true,
-	});
-		
-	socket.on('connect', function (sio) {
-		var prepMsg = JSON.stringify({
-			session: socket.id,
-			name: config.name
-		});
+  var socket = io.connect('http://' + config.server, {
+    'forceNew': true
+  })
 
-		Utils.client.sign(config.key.private, prepMsg, function (signed) {
-			// console.log(signed);
-			
-			socket.emit('authentication', {
-				name: config.name,
-				signed: signed
-			});
-		});
-	});
+  socket.on('connect', function (sio) {
+    var prepMsg = JSON.stringify({
+      session: socket.id,
+      name: config.name
+    })
 
-	socket.on('authenticated', function () {
-		console.log('Socket Connected!');
+    Utils.client.sign(config.key.private, prepMsg, function (signed) {
+      // console.log(signed)
 
-		HeartBeat();
-	});
+      socket.emit('authentication', {
+        name: config.name,
+        signed: signed
+      })
+    })
+  })
 
-	socket.on('unauthorized', function (err) {
-		console.log("There was an error with the authentication:", err.message);
-	});
+  socket.on('authenticated', function () {
+    console.log('Socket Connected!')
 
-	socket.on('reconnecting', function (attempt) {
-		console.log('Reconnecting', attempt);
-	});
+    HeartBeat()
+  })
 
-	socket.on('disconnect', function () {
-		console.log('Socket Disconnect!');
-	});
+  socket.on('unauthorized', function (err) {
+    console.log('There was an error with the authentication:', err.message)
+  })
 
-	socket.on('error', function (err) {
-		console.log('Error:', err);
-	});
+  socket.on('reconnecting', function (attempt) {
+    console.log('Reconnecting', attempt)
+  })
 
-	console.log('TheWatcher >> Client >> Started!'.green);
+  socket.on('disconnect', function () {
+    console.log('Socket Disconnect!')
+  })
 
-	// });
-	
-	function HeartBeat() {
+  socket.on('error', function (err) {
+    console.log('Error:', err)
+  })
 
-		var id = Math.floor((Math.random() * 100) + 1);
+  console.log('TheWatcher >> Client >> Started!'.green)
 
-		setInterval(function () {
-			var heartbeatTime = Date.now();
+  // })
 
-			// console.log(config);
+  function HeartBeat () {
+    setInterval(function () {
+      var heartbeatTime = Date.now()
 
-			socket.emit('client-heartbeat', {
-				name: config.name,
-				time: heartbeatTime,
-				data: HeartBeatData()
-			});
-		}, 2000);
+      // console.log(config)
 
-	}
+      socket.emit('client-heartbeat', {
+        name: config.name,
+        time: heartbeatTime,
+        data: HeartBeatData()
+      })
+    }, 2000)
+  }
 
-	function HeartBeatData() {
-		return JSON.stringify({
-			uptime: os.uptime(),
-			memory: {
-				free: os.freemem()
-			},
-			cup: {
-				loadavg: os.loadavg()
-			}
-		});
-	}
-
+  function HeartBeatData () {
+    return JSON.stringify({
+      uptime: os.uptime(),
+      memory: {
+        free: os.freemem()
+      },
+      cup: {
+        loadavg: os.loadavg()
+      }
+    })
+  }
 }

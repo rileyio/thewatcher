@@ -3,7 +3,10 @@ TheWatcher
 A client to server monitoring tool (*Keeps watch over its clients through the night for you.*)
 
 [![NPM Version][npm-badge]][npm-url] [![Dependency Status][david-dm-badge]][david-dm-url] [![Code Climate][code-climate-badge]][code-climate-url]
-  
+
+[![js-standard-style][js-standard-badge]][js-standard-url]
+
+
 ---
 
 ### # Setup
@@ -125,3 +128,5 @@ thewatcher --export /path/to/save/
 [code-climate-badge]: https://img.shields.io/codeclimate/github/TheDoxMedia/thewatcher.svg?style=flat-square
 [david-dm-url]: https://david-dm.org/thedoxmedia/thewatcher
 [david-dm-badge]: https://img.shields.io/david/TheDoxMedia/thewatcher.svg?style=flat-square
+[js-standard-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
+[js-standard-url]: https://github.com/feross/standard

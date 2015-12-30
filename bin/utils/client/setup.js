@@ -12,50 +12,71 @@ module.exports = function (calling) {
 	var optional = arguments[0],
 		callback = arguments[1];
 
-	// Check that no paramaters passed to setup func
-	// if (!Object.keys(optional).length) {
-	if (!optional) {
-		promptConfig(template);
-	}
+	var confDefaultPath = path.join(__TW, '/conf/');
 	
-	// If a custom config is passed, skip prompts
-	else {
-		generate_key(optional, function (ret) {
-			// Fillout template
-			template.id = id_gen(optional.name);
-			template.name = optional.name;
-			template.lat = optional.lat;
-			template.lon = optional.lon;
-			template.created_at = Date.now();
-			template.port = optional.port;
-			template.key.private.path = ret.Private;
-			template.key.public.path = ret.Public;
+	// Check for default config path (#2)
+	fs.stat(__TW + '/conf/', function (err, stats) {
 
-			// Database
-			template.db.type = optional.db.type;
-			template.db.host = optional.db.host;
-			template.db.database = optional.db.database;
-			template.db.user = optional.db.user;
-			template.db.pass = optional.db.pass;
-
-			// With no error on key gen
-			if (!ret.message) {
-				create_json(template);
-				callback();
+		if (err) {
+			// The ./conf dir does not exist
+			if (err.code === 'ENOENT') {
+				// Create it
+				fs.mkdirSync(confDefaultPath);
 			}
+			// Different error, throw
 			else {
-				callback(new Error(ret.message));
+				console.log(err.message.red);
+				process.exit(1)
 			}
+		}
+		
+		// Check that no paramaters passed to setup func
+		// if (!Object.keys(optional).length) {
+		if (!optional) {
+			promptConfig(template);
+		}
+	
+		// If a custom config is passed, skip prompts
+		else {
+			generate_key(optional, function (ret) {
+				// Fillout template
+				template.id = id_gen(optional.name);
+				template.name = optional.name;
+				template.lat = optional.lat;
+				template.lon = optional.lon;
+				template.created_at = Date.now();
+				template.port = optional.port;
+				template.key.private.path = ret.Private;
+				template.key.public.path = ret.Public;
 
-		});
-	}
+				// Database
+				template.db.type = optional.db.type;
+				template.db.host = optional.db.host;
+				template.db.database = optional.db.database;
+				template.db.user = optional.db.user;
+				template.db.pass = optional.db.pass;
+
+				// With no error on key gen
+				if (!ret.message) {
+					create_json(template);
+					callback();
+				}
+				else {
+					callback(new Error(ret.message));
+				}
+
+			});
+		}
+		
+	});
+
 }
 
 function create_json(data) {
-	return fs.writeFile(
-		path.join(__TW, 'conf/client.json'),
-		JSON.stringify(data, null, '\t')
-		);
+	var confDefaultFile = path.join(__TW, 'conf/client.json');	
+	
+	// Write client.json
+	return fs.writeFile(confDefaultFile, JSON.stringify(data, null, '\t'));
 }
 
 function id_gen(name) {
@@ -68,33 +89,53 @@ function id_gen(name) {
 }
 
 function generate_key(userInput, callback) {
+	var keysDefaultPath = path.join(__TW, '/conf/keys/');
+
 	var options = {
 		numBits: 2048,
 		userId: userInput.name
 	};
+	
+	// Check for default config/keys path (#2)
+	fs.stat(keysDefaultPath, function (err, stats) {
 
-	openpgp.generateKeyPair(options)
-		.then(function (keypair) {
-			// Success
-			var privkey = keypair.privateKeyArmored;
-			var pubkey = keypair.publicKeyArmored;
+		if (err) {
+			// The ./conf/keys dir does not exist
+			if (err.code === 'ENOENT') {
+				// Create it
+				fs.mkdirSync(keysDefaultPath);
+			}
+			// Different error, throw
+			else {
+				console.log(err.message.red);
+				process.exit(1)
+			}
+		}
 
-			// Save keys to files
-			// [PRI] {install}/conf/keys/PrivateKey.pgp
-			fs.writeFileSync(path.join(__TW, 'conf/keys/PrivateKey'), privkey);
+		openpgp.generateKeyPair(options)
+			.then(function (keypair) {
+				// Success
+				var privkey = keypair.privateKeyArmored;
+				var pubkey = keypair.publicKeyArmored;
 
-			// [PUB] {install}/conf/keys/PublicKey.pgp
-			fs.writeFileSync(path.join(__TW, 'conf/keys/PublicKey.pgp'), pubkey);
+				// Save keys to files
+				// [PRI] {install}/conf/keys/PrivateKey.pgp
+				fs.writeFileSync(path.join(__TW, 'conf/keys/PrivateKey'), privkey);
 
-			// Callback
-			callback({
-				Private: path.join(__TW, 'conf/keys/PrivateKey'),
-				Public: path.join(__TW, 'conf/keys/PublicKey.pgp')
+				// [PUB] {install}/conf/keys/PublicKey.pgp
+				fs.writeFileSync(path.join(__TW, 'conf/keys/PublicKey.pgp'), pubkey);
+
+				// Callback
+				callback({
+					Private: path.join(__TW, 'conf/keys/PrivateKey'),
+					Public: path.join(__TW, 'conf/keys/PublicKey.pgp')
+				});
+			})
+			.catch(function (err) {
+				console.log(err);
 			});
-		})
-		.catch(function (err) {
-			console.log(err);
-		});
+	});
+
 }
 
 function promptConfig(template) {

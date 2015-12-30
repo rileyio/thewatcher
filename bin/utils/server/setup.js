@@ -4,7 +4,7 @@ var fs = require('fs');
 var openpgp = require('openpgp');
 var path = require('path');
 
-module.exports = function() {
+module.exports = function () {
 	// Load default config layout from template js
 	var template = require(path.join(
 		__TW, '/resources/server/templates/config'));
@@ -12,50 +12,69 @@ module.exports = function() {
 	var optional = arguments[0],
 		callback = arguments[1];
 
-	// Check that no paramaters passed to setup func
-	// if (!Object.keys(optional).length) {
-	if (!optional) {
-		promptConfig(template);
-	}
+	var confDefaultPath = path.join(__TW, '/conf/');
+	
+	// Check for default config path (#2)
+	fs.stat(__TW + '/conf/', function (err, stats) {
 
-	// If a custom config is passed, skip prompts
-	else {
-		generate_key(optional, function(ret) {
-			// Fillout template
-			template.id = id_gen(optional.name);
-			template.name = optional.name;
-			template.lat = optional.lat;
-			template.lon = optional.lon;
-			template.created_at = Date.now();
-			template.port = optional.port;
-			template.key.private.path = ret.Private;
-			template.key.public.path = ret.Public;
-
-			// Database
-			template.db.type = optional.db.type;
-			template.db.host = optional.db.host;
-			template.db.database = optional.db.database;
-			template.db.user = optional.db.user;
-			template.db.pass = optional.db.pass;
-
-			// With no error on key gen
-			if (!ret.message) {
-				create_json(template);
-				callback();
+		if (err) {
+			// The ./conf dir does not exist
+			if (err.code === 'ENOENT') {
+				// Create it
+				fs.mkdirSync(confDefaultPath);
 			}
-			else{
-				callback(new Error(ret.message));
+			// Different error, throw
+			else {
+				console.log(err.message.red);
+				process.exit(1)
 			}
+		}
+		
+		// Check that no paramaters passed to setup func
+		// if (!Object.keys(optional).length) {
+		if (!optional) {
+			promptConfig(template);
+		}
 
-		});
-	}
+		// If a custom config is passed, skip prompts
+		else {
+			generate_key(optional, function (ret) {
+				// Fillout template
+				template.id = id_gen(optional.name);
+				template.name = optional.name;
+				template.lat = optional.lat;
+				template.lon = optional.lon;
+				template.created_at = Date.now();
+				template.port = optional.port;
+				template.key.private.path = ret.Private;
+				template.key.public.path = ret.Public;
+
+				// Database
+				template.db.type = optional.db.type;
+				template.db.host = optional.db.host;
+				template.db.database = optional.db.database;
+				template.db.user = optional.db.user;
+				template.db.pass = optional.db.pass;
+
+				// With no error on key gen
+				if (!ret.message) {
+					create_json(template);
+					callback();
+				}
+				else {
+					callback(new Error(ret.message));
+				}
+			});
+		}
+
+	});
 }
 
 function create_json(data) {
 	return fs.writeFile(
 		path.join(__TW, 'conf/server.json'),
 		JSON.stringify(data, null, '\t')
-	);
+		);
 }
 
 function id_gen(name) {
@@ -68,34 +87,53 @@ function id_gen(name) {
 }
 
 function generate_key(userInput, callback) {
+	var keysDefaultPath = path.join(__TW, '/conf/keys/');
+
 	var options = {
 		numBits: 2048,
 		userId: userInput.name
 	};
+	
+	// Check for default config/keys path (#2)
+	fs.stat(keysDefaultPath, function (err, stats) {
 
-	openpgp.generateKeyPair(options)
-		.then(function(keypair) {
-			// Success
-			var privkey = keypair.privateKeyArmored;
-			var pubkey = keypair.publicKeyArmored;
+		if (err) {
+			// The ./conf/keys dir does not exist
+			if (err.code === 'ENOENT') {
+				// Create it
+				fs.mkdirSync(keysDefaultPath);
+			}
+			// Different error, throw
+			else {
+				console.log(err.message.red);
+				process.exit(1)
+			}
+		}
 
-			// Save keys to files
-			// [PRI] {install}/conf/keys/SVR_PrivateKey.pgp
-			fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PrivateKey'), privkey);
+		openpgp.generateKeyPair(options)
+			.then(function (keypair) {
+				// Success
+				var privkey = keypair.privateKeyArmored;
+				var pubkey = keypair.publicKeyArmored;
 
-			// [PUB] {install}/conf/keys/SVR_PublicKey.pgp
-			fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PublicKey.pgp'), pubkey);
+				// Save keys to files
+				// [PRI] {install}/conf/keys/SVR_PrivateKey.pgp
+				fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PrivateKey'), privkey);
 
-			// Callback
-			callback({
-				Private: path.join(__TW, 'conf/keys/SVR_PrivateKey'),
-				Public: path.join(__TW, 'conf/keys/SVR_PublicKey.pgp')
+				// [PUB] {install}/conf/keys/SVR_PublicKey.pgp
+				fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PublicKey.pgp'), pubkey);
+
+				// Callback
+				callback({
+					Private: path.join(__TW, 'conf/keys/SVR_PrivateKey'),
+					Public: path.join(__TW, 'conf/keys/SVR_PublicKey.pgp')
+				});
+
+			})
+			.catch(function (err) {
+				callback(err);
 			});
-
-		})
-		.catch(function(err) {
-			callback(err);
-		});
+	});
 }
 
 function promptConfig(template) {
@@ -151,11 +189,11 @@ function promptConfig(template) {
 			}
 		},
 
-	}, function(err, userInput) {
+	}, function (err, userInput) {
 		// Start PGP Key gen
 		console.log('TheWatcher >> Server :: Setup >> Creating PGP Keys..'.cyan);
 
-		generate_key(userInput, function(PGPKeyPath) {
+		generate_key(userInput, function (PGPKeyPath) {
 			// Fillout template
 			template.id = id_gen(userInput.name);
 			template.name = userInput.name;

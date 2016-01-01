@@ -6,6 +6,9 @@ module.exports = {
   // A sha512 combining the current time and name
   id: undefined,
 
+  // Data update interval to server
+  interval: undefined,
+
   // Client Latitude
   lat: undefined,
 
@@ -20,10 +23,6 @@ module.exports = {
 
   // Basic Mode string
   mode: 'client',
-
-  // Port for listening
-  // Default: 3306
-  port: 3306,
 
   // PGP Key path (Generated during `node index.js -s server`)
   key: {

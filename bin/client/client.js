@@ -34,6 +34,7 @@ exports.start = function (config) {
   socket.on('authenticated', function () {
     console.log('Socket Connected!')
 
+    // Start Data heartbeat
     HeartBeat()
   })
 
@@ -61,14 +62,14 @@ exports.start = function (config) {
     setInterval(function () {
       var heartbeatTime = Date.now()
 
-      // console.log(config)
+      // console.log(heartbeatTime)
 
       socket.emit('client-heartbeat', {
         name: config.name,
         time: heartbeatTime,
         data: HeartBeatData()
       })
-    }, 2000)
+    }, config.interval)
   }
 
   function HeartBeatData () {

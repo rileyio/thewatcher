@@ -23,7 +23,7 @@ exports.start = function (config) {
 
   // Setup MemDB
   var MemDB = new Loki('loki.json')
-  var Heartbeats = MemDB.addCollection('heartbeats')
+  var HBData = MemDB.addCollection('live-client-data')
 
   // Clients running array
   var stats = {
@@ -94,19 +94,19 @@ exports.start = function (config) {
       var name = data.name
       socket.client.user = name
 
-      // Check if client is in the heartbeats MemDB
-      var inMemDB = Heartbeats.findOne({
+      // Check if client is in the HBData MemDB
+      var inMemDB = HBData.findOne({
         name: name,
         session: socket.client.id
       })
 
-      // Add client to heartbeats array
+      // Add client to HBData array
       if (!inMemDB) {
         if (!silent) {
-          console.log('TheWatcher >> Server >> MemDB::Heartbeats(add:%s)', name)
+          console.log('TheWatcher >> Server >> MemDB::HBData(add:%s)', name)
         }
 
-        Heartbeats.insert({
+        HBData.insert({
           name: name,
           data: {}
         })
@@ -117,9 +117,9 @@ exports.start = function (config) {
 
       socket.on('client-heartbeat', function (heartbeat) {
         // Update heartbeat mem db
-        var update = Heartbeats.findOne({ 'name': heartbeat.name })
+        var update = HBData.findOne({ 'name': heartbeat.name })
 
-        // console.log(Heartbeats)
+        // console.log(HBData)
         // console.log(heartbeat.name)
         // console.log(update)
 
@@ -147,7 +147,7 @@ exports.start = function (config) {
           console.log('Send Stats To Admin!')
           io.to(socket.id).emit('server-stats', {
             stats: stats,
-            heartbeats: Heartbeats.data
+            HBData: HBData.data
           })
         }
       }

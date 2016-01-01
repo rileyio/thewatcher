@@ -176,10 +176,10 @@ function promptConfig (template) {
     generate_key(userInput, function (PGPKeyPath) {
       template.id = id_gen(userInput.name)
       template.name = userInput.name
+      template.interval = userInput.interval
       template.lat = userInput.lat
       template.lon = userInput.lon
       template.created_at = Date.now()
-      // template.port = userInput.port
       template.server = userInput.server
       template.key.private.path = PGPKeyPath.Private
       template.key.public.path = PGPKeyPath.Public

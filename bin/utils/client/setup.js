@@ -162,7 +162,7 @@ function promptConfig (template) {
         description: 'Home server address:port '.green,
         // pattern: /^([0-9]{1,5})$/,
         required: true,
-        default: '127.0.0.1:3306'
+        default: '127.0.0.1:9905'
       }
     }
 

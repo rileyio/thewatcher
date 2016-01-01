@@ -151,7 +151,7 @@ function promptConfig (template) {
         description: 'Listen port: '.green,
         pattern: /^([0-9]{1,5})$/,
         required: true,
-        default: 3306
+        default: 9905
       },
       dbType: {
         description: 'Database Type: '.yellow,

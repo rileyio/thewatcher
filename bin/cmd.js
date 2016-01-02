@@ -82,10 +82,10 @@ function fullText () {
    Usage: thewatcher [switch] <opt>
 
    [switch] <opt>:
-      -a, --add      <client> <path_to_config>
+      -a, --add     <path_to_save>
       -m, --mode    <server|client>
-      -s, --setup    <server|client>
-    --export        <client> <path_to_save>
+      -s, --setup   <server|client>
+      --export      <client> <path_to_save>
 
    Examples:
       thewatcher -m server  Start in server mode

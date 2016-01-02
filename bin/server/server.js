@@ -4,14 +4,12 @@
 // Server.js
 
 var app = require('express')()
-var http = require('http').Server(app)
-var io = require('socket.io')(http)
+var https = require('https')
+var io = require('socket.io')
+var sioAuth = require('socketio-auth')
 var Utils = require('./../utils/utils')
-
-// Express middleware
-// var bodyParser = require('body-parser')
-// var cookieParser = require('cookie-parser')
-// var session = require('express-session')
+var fs = require('fs')
+var path = require('path')
 
 // Databases
 var Loki = require('lokijs')
@@ -23,7 +21,22 @@ exports.start = function (config) {
 
   // Setup MemDB
   var MemDB = new Loki('loki.json')
+  
+  // Live Data (Uptime, Mem, CPU, etc)
   var HBData = MemDB.addCollection('live-client-data')
+  
+  // Admin connections
+  var ConnectedAdmins = MemDB.addCollection('connected-admins')
+
+  // HTTPS Certificate config
+  var httpsOpts = {
+    key: fs.readFileSync(__TW + '/conf/certs/server.key'),
+    cert: fs.readFileSync(__TW + '/conf/certs/server.crt')
+  }
+
+  // Express config
+  // -- Set View Engine
+  app.set('view engine', 'ejs')
 
   // Clients running array
   var stats = {
@@ -33,63 +46,84 @@ exports.start = function (config) {
   var silent = config.silent
 
   // Listen for start of handshakes from clients
-  app.get('/', function (req, res) {
+  app.get('/admin', function (req, res) {
     // Send local server monitoring panel
-    res.sendFile(__TW + '/resources/server/www/index.html')
-  // if (!req.user) {
-  //   res.send(401)
-  // } else {
-  //   res.json(req.user)
-  // }
+    res.render(path.join(__TW, '/resources/server/www/index'), {
+      // Send server's key & name for logging in locally
+      svrUserName: config.name,
+      svrURL: '127.0.0.1:' + config.port
+    })
+    // if (!req.user) {
+    //   res.send(401)
+    // } else {
+    //   res.json(req.user)
+    // }
   })
 
   // Initaialize Socket IO with given port in server config
-  var expressServer = http.listen(config.port, function () {
-    var host = expressServer.address().address
-    var port = expressServer.address().port
+  var server = https.createServer(httpsOpts, app)
+    .listen(config.port, function () {
+      var host = server.address().address
+      var port = server.address().port
 
-    // Good to listen
-    // Print successful startup
-    if (!silent) {
-      console.log('TheWatcher >> Listening @ //%s:%s'.green, host, port)
-    }
-  // console.log(args)
-  })
-
+      // Good to listen
+      // Print successful startup
+      if (!silent) {
+        console.log('TheWatcher >> Listening @ //%s:%s'.green, host, port)
+      }
+    })
   // //////////////////////////////////////////////////////////////
   // ///  Socket.IO Below /////////////////////////////////////////
+  var sio = io(server)
 
-  require('socketio-auth')(io, {
+  // Setup SocketIO Authentication
+  sioAuth(sio, {
     authenticate: function (socket, data, callback) {
       console.log('Socket IO Auth (i.e login)')
 
-      // Lookup client in DB
-      DB.client.get({
-        name: data.name
-      }, function (result) {
-        if (result) {
-          // console.log(result)
-          Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
-            if (ret.signatures[0].valid) {
-              // console.log(ret.signatures[0].valid)
-              // Save client's new session id to DB
-              DB.client.update({
-                name: data.name,
-                session: socket.id
-              })
+      // If self connecting (i.e. From https://127.0.0.1:<port>/admin)
+      if (config.name === data.name) {
+        Utils.server.verifySig(config.key.public, data.signed, function (ret) {
+          if (ret.signatures[0].valid) {
+            // Store admin
+            ConnectedAdmins.insert({
+              name: data.name,
+              session: socket.id
+            })
 
-              return callback(null, 'authd')
-            } else {
-              return callback(new Error('Authentication error!'))
-            }
-          })
-        } else {
-          return callback(new Error('Client not found'))
-        }
-      })
+            return callback(null, 'authd')
+          } else {
+            return callback(new Error('Authentication error!'))
+          }
+        })
+      } else {
+        // Normal Clients - Lookup client in DB
+        DB.client.get({
+          name: data.name
+        }, function (result) {
+          if (result) {
+            // console.log(result)
+            Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
+              if (ret.signatures[0].valid) {
+                // Save client's new session id to DB
+                DB.client.update({
+                  name: data.name,
+                  session: socket.id
+                })
+
+                return callback(null, 'authd')
+              } else {
+                return callback(new Error('Authentication error!'))
+              }
+            })
+          } else {
+            return callback(new Error('Client not found'))
+          }
+        })
+      }
     },
     postAuthenticate: function (socket, data) {
-      console.log('Socket IO POSTAuth')
+      console.log('Socket IO POSTAuth, User: %s, SID: %s', data.name, socket.client.id)
 
       var name = data.name
       socket.client.user = name
@@ -101,19 +135,21 @@ exports.start = function (config) {
       })
 
       // Add client to HBData array
-      if (!inMemDB) {
+      // Ignore Admins (current server via browser)
+      if (!inMemDB && config.name !== data.name) {
         if (!silent) {
           console.log('TheWatcher >> Server >> MemDB::HBData(add:%s)', name)
         }
 
         HBData.insert({
           name: name,
+          session: socket.client.id,
           data: {}
         })
       }
 
       stats.connected++
-      sendStats()
+      // sendStats()
 
       socket.on('client-heartbeat', function (heartbeat) {
         // Update heartbeat mem db
@@ -125,32 +161,50 @@ exports.start = function (config) {
 
         update.data = heartbeat.data
 
-      // console.log(update)
+        // console.log(update)
       })
 
       socket.on('server-stats', function (heartbeat) {
         socket.emit('server-stats', stats)
-      // sendStats()
+        // sendStats()
       })
 
-      socket.on('disconnect', function (heartbeat) {
-        stats.connected--
-        sendStats()
-      })
+      socket.on('disconnect', function () {
+        // Remove client from live DB data
+        console.log('%s Disconnected', socket.client.id)
 
-      // Side note: need to spawn or track admins for stats
-      // and send data
-      function sendStats () {
-        console.log('Send Stats Called..')
+        // Get client in hb array
+        var clientInHBArr = HBData.findOne({ 'session': socket.client.id })        
+        // console.log('clientInHBArr:', clientInHBArr)
 
-        if (name === 'admin') {
-          console.log('Send Stats To Admin!')
-          io.to(socket.id).emit('server-stats', {
-            stats: stats,
-            HBData: HBData.data
-          })
+        // Remove from hb array
+        if (clientInHBArr) {
+          HBData.remove(clientInHBArr)
         }
-      }
+
+        // Now show array
+        // console.log('@@@@ NEW ARRAY:', HBData.data)
+
+        // sendStats()
+      })
     }
   })
+
+  setInterval(function () {
+    // console.log('Send Stats Called..')
+    // console.log('Socket ID:', socket.id)
+    var currentAdmins = ConnectedAdmins.data
+    // console.log('connected admins', currentAdmins)
+    // for each admin
+    for (var index = 0; index < currentAdmins.length; index++) {
+      var admin = currentAdmins[index]
+      // console.log('Session ID', admin.session)
+      // console.log('Send Stats To Admin!')
+      sio.to(admin.session).emit('server-stats', {
+        stats: stats,
+        hbData: HBData.data
+      })
+    }
+  }, 1000)
+  
 }

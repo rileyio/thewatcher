@@ -11,7 +11,8 @@ var os = require('os')
 var Utils = require('./../utils/Utils')
 
 exports.start = function (config) {
-  var socket = io.connect('http://' + config.server, {
+  var socket = io.connect('wss://' + config.server, {
+    'secure': true,
     'forceNew': true
   })
 

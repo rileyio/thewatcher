@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>TheWatcher - Server (By: TheDoxMedia)</title>
+  <style>
+    body {
+      font-family: monospace;
+    }
+    
+    input {
+      border: 1px solid dimgray;
+    }
+    
+    .success-text {
+      color: rgba(39, 174, 96, 1.0);
+    }
+    
+    .fail-text {
+      color: rgba(192, 57, 43, 1.0);
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <div id="login">
+      Supply
+      <%= svrUserName %>'s PGP private key to login
+        <br/>
+        <br/>
+        <input type="file" id="login-input-key" />
+
+        <br/>
+        <br/>
+        <div id="login-debug">
+          <span id="login-debug-0">PGP Key loaded</span>
+          <br/>
+          <span id="login-debug-1">WSS Connected</span>
+          <br/>
+          <span id="login-debug-2">Authenticated</span>
+          <br/>
+        </div>
+    </div>
+
+    <br/>
+    <br/>
+
+    <div id="monitor" style="display: none;">
+      Clients Connected: <span id="clients-connected">n/a</div>
+      
+      <br/><br/>
+      Clients Stats:
+      <!-- component template -->
+      <div id="clients">
+        <div v-for="client in clients">
+          {{ client.name }}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/1.0.13/vue.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/openpgp/1.4.1/openpgp.min.js"></script>
+    <script>
+    // PGP Key Data
+    var pgpKeyData = {};
+    var selfURL = '<%= svrURL %>';
+    var liveData; // Populated when connected
+    var interval;
+
+    // Login JS
+    $('#login-input-key').change(function(){
+      var file = $(this)[0].files[0];
+      var reader = new FileReader();
+      
+      // Read file
+      reader.readAsText(file);
+      
+      // When done
+      reader.onload = function(e){
+        pgpKeyData.private = e.target.result;
+        
+        checklist('login-debug-0', true);
+        
+        // Call connect function
+        connect();
+      }
+    });
+    
+    function connect (){
+      var socket = io.connect('wss://' + selfURL, {
+        'secure': true,
+        'forceNew': true
+      })
+
+      socket.on('connect', function () {
+        checklist('login-debug-1', true);        
+        
+        var prepMsg = JSON.stringify({
+          session: socket.id,
+          name: '<%= svrUserName %>'
+        });
+        
+        pgpSign(pgpKeyData.private, prepMsg, function(signed){
+          // Emit over wss to authenticate
+          socket.emit('authentication', {
+            name: '<%= svrUserName %>',
+            signed: signed
+          });
+        });
+      });
+      
+      socket.on('authenticated', function () {
+        checklist('login-debug-2', true);        
+        console.log('Socket Connected!');
+        
+        // Monitor();
+        $('#monitor').show();
+      });
+      
+      socket.on('unauthorized', function (err) {
+        checklist('login-debug-2', false);
+        
+        console.log("There was an error with the authentication:", err.message);
+      });
+      
+      socket.on('reconnecting', function (attempt) {
+        console.log('Reconnecting', attempt);
+      });
+      
+      // Clients stats list template
+      new Vue({
+        el: '#clients',
+        data: {
+          clients: [
+            {
+                name: null,
+                session: null,
+                data: null
+            }
+          ]
+        },
+        ready: function (){
+          var self = this;          
+          
+          socket.on('server-stats', function (data) {
+            // Total number of connected clients
+            $('#clients-connected').text(data.hbData.length);
+            // liveData = data;
+
+            self.clients = data.hbData;
+          });
+        }      
+      })
+      
+      socket.on('disconnect', function(data){
+        checklist('login-debug-1', false);
+        checklist('login-debug-2', false);
+        
+        // console.log(data);
+        $('#clients-connected').text('Disconnected');
+    
+        // clearInterval(interval);
+      });
+  
+      socket.on('error', function(err){
+          console.log(err);
+          $('#clients-connected').text(err);
+      });
+    }
+    
+    // PGP Signer
+    function pgpSign(key, message, callback){
+      var readKey = openpgp.key.readArmored(key);
+
+      openpgp.signClearMessage(readKey.keys[0], message)
+        .then(callback);
+    }
+
+    // Checklist update (debugging list)
+    function checklist(id, success){
+      var newColor = (success === true) ? 'success-text' : 'fail-text';
+      var newMark = (success === true) ? '<span class="status">&#10004;</span> ' : '<span class="status">&#10008;</span> ';
+      
+      // Remove any current status indicators & colors
+      $('.status', '#' + id).remove();
+      $('#' + id).removeClass('success-text fail-text');
+      
+      // Update debug line
+      $('#' + id) .addClass(newColor).prepend(newMark);
+    }
+
+      </script>
+</body>
+
+</html>

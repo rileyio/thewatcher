@@ -19,6 +19,12 @@
     .fail-text {
       color: rgba(192, 57, 43, 1.0);
     }
+    .client-sep {
+      color: rgba(41, 128, 185,1.0);
+    }
+    .client-value {
+      color: rgba(142, 68, 173,1.0);
+    }
   </style>
 </head>
 
@@ -49,12 +55,14 @@
     <div id="monitor" style="display: none;">
       Clients Connected: <span id="clients-connected">n/a</div>
       
-      <br/><br/>
+      <br/>
       Clients Stats:
       <!-- component template -->
       <div id="clients">
         <div v-for="client in clients">
-          {{ client.name }}
+          <b>Name<span class="client-sep">::</span><span class="client-value">{{ client.name }}</span></b> &nbsp;&nbsp;&nbsp;
+          Uptime::{{ client.data.uptime }}
+          Mem::<span class="client-value">{{ client.data.memory.free }}/{{ client.data.memory.total }}</span>
         </div>
       </div>
     </div>
@@ -67,7 +75,7 @@
     <script>
     // PGP Key Data
     var pgpKeyData = {};
-    var selfURL = '<%= svrURL %>';
+    var selfURL = window.location.host;
     var liveData; // Populated when connected
     var interval;
 
@@ -132,7 +140,7 @@
       });
       
       // Clients stats list template
-      new Vue({
+      var clientsVue = new Vue({
         el: '#clients',
         data: {
           clients: [
@@ -143,13 +151,22 @@
             }
           ]
         },
+        // methods: {
+        //   byteToMB: function (value){
+        //     return (value / 1024 / 1024)
+        //   }
+        // },
         ready: function (){
           var self = this;          
           
           socket.on('server-stats', function (data) {
             // Total number of connected clients
             $('#clients-connected').text(data.hbData.length);
-            // liveData = data;
+
+            // Parse/Recalc some vales
+            // var socketData = data.hbData;
+            // [Parse] Memory from bytes to MB
+            // socketData.
 
             self.clients = data.hbData;
           });

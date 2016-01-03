@@ -8,7 +8,7 @@
 var io = require('socket.io-client')
 var os = require('os')
 
-var Utils = require('./../utils/Utils')
+var Utils = require('./../utils/utils')
 
 exports.start = function (config) {
   var socket = io.connect('wss://' + config.server, {
@@ -77,7 +77,8 @@ exports.start = function (config) {
     return JSON.stringify({
       uptime: os.uptime(),
       memory: {
-        free: os.freemem()
+        free: os.freemem(),
+        total: os.totalmem()
       },
       cup: {
         loadavg: os.loadavg()

@@ -67,6 +67,7 @@ exports.start = function (config) {
         console.log('TheWatcher >> Listening @ //%s:%s'.green, host, port)
       }
     })
+    
   // //////////////////////////////////////////////////////////////
   // ///  Socket.IO Below /////////////////////////////////////////
   var sio = io(server)
@@ -83,7 +84,7 @@ exports.start = function (config) {
             // Store admin
             ConnectedAdmins.insert({
               name: data.name,
-              session: socket.id
+              socketID: socket.id
             })
 
             return callback(null, 'authd')
@@ -168,11 +169,21 @@ exports.start = function (config) {
 
         // Get client in hb array
         var clientInHBArr = HBData.findOne({ 'session': socket.client.id })
+
+        // If Admin get in admin array
+        var clientInAdminArr = ConnectedAdmins.findOne({ 'socketID': socket.client.id })
+
+        // console.log('########', clientInAdminArr)
         // console.log('clientInHBArr:', clientInHBArr)
 
         // Remove from hb array
         if (clientInHBArr) {
           HBData.remove(clientInHBArr)
+        }
+
+        // Remove from Connected Admins MemDB
+        if (clientInAdminArr) {
+          ConnectedAdmins.remove(clientInAdminArr)
         }
 
       // Now show array
@@ -194,8 +205,9 @@ exports.start = function (config) {
       var admin = currentAdmins[index]
       // console.log('Session ID', admin.session)
       // console.log('Send Stats To Admin!')
-      sio.to(admin.session).emit('server-stats', {
-        hbData: prepData
+      sio.to(admin.socketID).emit('server-stats', {
+        hbData: prepData,
+        adminsData: currentAdmins
       })
     }
   }, 1000)

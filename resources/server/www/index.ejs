@@ -53,12 +53,19 @@
     <br/>
 
     <div id="monitor" style="display: none;">
+      Admins Connected: <span id="admins-connected">n/a</div>
       Clients Connected: <span id="clients-connected">n/a</div>
-      
+
       <br/>
       Clients Stats:
-      <!-- component template -->
       <div id="clients">
+        <div id="admins">
+          <div v-for="admin in admins">
+            <b>ADMIN<span class="admin-sep">::</span><span class="admin-value">{{ admin.name }}</span></b> &nbsp;&nbsp;&nbsp;
+            <b>SocketID<span class="admin-sep">::</span><span class="admin-value">{{ admin.socketID }}</span></b> &nbsp;&nbsp;&nbsp;
+          </div>
+        </div>
+      
         <div v-for="client in clients">
           <b>Name<span class="client-sep">::</span><span class="client-value">{{ client.name }}</span></b> &nbsp;&nbsp;&nbsp;
           Uptime::{{ client.data.uptime }}
@@ -143,6 +150,12 @@
       var clientsVue = new Vue({
         el: '#clients',
         data: {
+          admins: [
+            {
+              name: null,
+              socketID: null
+            }
+          ],
           clients: [
             {
                 name: null,
@@ -161,6 +174,7 @@
           
           socket.on('server-stats', function (data) {
             // Total number of connected clients
+            $('#admins-connected').text(data.adminsData.length);
             $('#clients-connected').text(data.hbData.length);
 
             // Parse/Recalc some vales
@@ -169,6 +183,7 @@
             // socketData.
 
             self.clients = data.hbData;
+            self.admins = data.adminsData;
           });
         }      
       })

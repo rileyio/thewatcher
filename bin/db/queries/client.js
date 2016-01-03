@@ -40,7 +40,7 @@ Client.prototype.update = function (data) {
       'sha_id': data.sha_id
     })
     .update({
-      session: data.session,
+      socket_id: data.socket_id,
       updated_at: self.DB.fn.now()
     })
     .then(function (ret) {

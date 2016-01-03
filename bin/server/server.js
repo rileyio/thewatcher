@@ -84,7 +84,7 @@ exports.start = function (config) {
             // Store admin in ConnectedAdmins MemDB
             ConnectedAdmins.insert({
               name: data.name,
-              socketID: socket.id
+              socket_id: socket.id
             })
 
             return callback(null, 'authd')
@@ -104,11 +104,11 @@ exports.start = function (config) {
             // Validate payload using Client's stored Public Key
             Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
               if (ret.signatures[0].valid) {
-                // Save client's new session id to DB
+                // Save client's new socket_id id to DB
                 DB.client.update({
                   name: data.name,
                   sha_id: data.sha_id,
-                  session: socket.id
+                  socket_id: socket.id
                 })
 
                 return callback(null, 'authd')
@@ -131,7 +131,7 @@ exports.start = function (config) {
       // Check if client is in the HBData MemDB
       var inMemDB = HBData.findOne({
         name: name,
-        session: socket.client.id
+        socket_id: socket.client.id
       })
 
       // Add client to HBData array
@@ -143,7 +143,7 @@ exports.start = function (config) {
 
         HBData.insert({
           name: name,
-          session: socket.client.id,
+          socket_id: socket.client.id,
           data: {}
         })
       }
@@ -172,10 +172,10 @@ exports.start = function (config) {
         console.log('%s Disconnected', socket.client.id)
 
         // Get client in hb array
-        var clientInHBArr = HBData.findOne({ 'session': socket.client.id })
+        var clientInHBArr = HBData.findOne({ 'socket_id': socket.client.id })
 
         // If Admin get in admin array
-        var clientInAdminArr = ConnectedAdmins.findOne({ 'socketID': socket.client.id })
+        var clientInAdminArr = ConnectedAdmins.findOne({ 'socket_id': socket.client.id })
 
         // console.log('########', clientInAdminArr)
         // console.log('clientInHBArr:', clientInHBArr)
@@ -207,9 +207,9 @@ exports.start = function (config) {
 
     for (var index = 0; index < currentAdmins.length; index++) {
       var admin = currentAdmins[index]
-      // console.log('Session ID', admin.session)
+      // console.log('socket_id ID', admin.socket_id)
       // console.log('Send Stats To Admin!')
-      sio.to(admin.socketID).emit('server-stats', {
+      sio.to(admin.socket_id).emit('server-stats', {
         hbData: prepData,
         adminsData: currentAdmins
       })

@@ -7,7 +7,7 @@ exports.up = function (knex, Promise) {
       table.string('type', 16).notNullable()
       table.float('latitude').nullable
       table.float('longitude').nullable()
-      table.string('session', 64).nullable()
+      table.string('socket_id', 64).nullable()
       table.timestamp('added_at').defaultTo(knex.fn.now())
       table.timestamp('created_at')
       table.timestamp('updated_at')

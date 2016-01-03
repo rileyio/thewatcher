@@ -62,7 +62,7 @@
         <div id="admins">
           <div v-for="admin in admins">
             <b>ADMIN<span class="admin-sep">::</span><span class="admin-value">{{ admin.name }}</span></b> &nbsp;&nbsp;&nbsp;
-            <b>SocketID<span class="admin-sep">::</span><span class="admin-value">{{ admin.socketID }}</span></b> &nbsp;&nbsp;&nbsp;
+            <b>SocketID<span class="admin-sep">::</span><span class="admin-value">{{ admin.socket_id }}</span></b> &nbsp;&nbsp;&nbsp;
           </div>
         </div>
       
@@ -115,7 +115,7 @@
         checklist('login-debug-1', true);        
         
         var prepMsg = JSON.stringify({
-          session: socket.id,
+          socket_id: socket.id,
           name: '<%= svrUserName %>'
         });
         
@@ -153,13 +153,13 @@
           admins: [
             {
               name: null,
-              socketID: null
+              socket_id: null
             }
           ],
           clients: [
             {
                 name: null,
-                session: null,
+                socket_id: null,
                 data: null
             }
           ]

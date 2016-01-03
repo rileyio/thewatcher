@@ -67,7 +67,7 @@ exports.start = function (config) {
         console.log('TheWatcher >> Listening @ //%s:%s'.green, host, port)
       }
     })
-    
+
   // //////////////////////////////////////////////////////////////
   // ///  Socket.IO Below /////////////////////////////////////////
   var sio = io(server)
@@ -81,7 +81,7 @@ exports.start = function (config) {
       if (config.name === data.name) {
         Utils.server.verifySig(config.key.public, data.signed, function (ret) {
           if (ret.signatures[0].valid) {
-            // Store admin
+            // Store admin in ConnectedAdmins MemDB
             ConnectedAdmins.insert({
               name: data.name,
               socketID: socket.id
@@ -95,15 +95,19 @@ exports.start = function (config) {
       } else {
         // Normal Clients - Lookup client in DB
         DB.client.get({
-          name: data.name
+          name: data.name,
+          sha_id: data.sha_id
         }, function (result) {
+          // Results = True; and the client & pubkey could be fetched from
+          // the DB
           if (result) {
-            // console.log(result)
+            // Validate payload using Client's stored Public Key
             Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
               if (ret.signatures[0].valid) {
                 // Save client's new session id to DB
                 DB.client.update({
                   name: data.name,
+                  sha_id: data.sha_id,
                   session: socket.id
                 })
 

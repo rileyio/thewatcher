@@ -10,7 +10,10 @@ Client.prototype.get = function (data, callback) {
 
   self.DB('clients')
     .select('*')
-    .where('name', data.name)
+    .where({
+      'name': data.name,
+      'sha_id': data.sha_id
+    })
     .then(function (ret) {
       if (ret.length > 0) {
         console.log('TheWatcher >> Server >> DB::Client(lookup:%s)->Success'.green, data.name)
@@ -32,7 +35,10 @@ Client.prototype.update = function (data) {
   console.log('TheWatcher >> Server >> DB::Client(update:%s)'.yellow, data.name)
 
   self.DB('clients')
-    .where('name', data.name)
+    .where({
+      'name': data.name,
+      'sha_id': data.sha_id
+    })
     .update({
       session: data.session,
       updated_at: self.DB.fn.now()

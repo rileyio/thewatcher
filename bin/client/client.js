@@ -19,6 +19,7 @@ exports.start = function (config) {
   socket.on('connect', function (sio) {
     var prepMsg = JSON.stringify({
       session: socket.id,
+      sha_id: config.id,
       name: config.name
     })
 
@@ -27,6 +28,7 @@ exports.start = function (config) {
 
       socket.emit('authentication', {
         name: config.name,
+        sha_id: config.id,
         signed: signed
       })
     })

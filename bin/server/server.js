@@ -21,10 +21,10 @@ exports.start = function (config) {
 
   // Setup MemDB
   var MemDB = new Loki('loki.json')
-  
+
   // Live Data (Uptime, Mem, CPU, etc)
   var HBData = MemDB.addCollection('live-client-data')
-  
+
   // Admin connections
   var ConnectedAdmins = MemDB.addCollection('connected-admins')
 
@@ -38,11 +38,6 @@ exports.start = function (config) {
   // -- Set View Engine
   app.set('view engine', 'ejs')
 
-  // Clients running array
-  var stats = {
-    connected: 0
-  }
-
   var silent = config.silent
 
   // Listen for start of handshakes from clients
@@ -53,11 +48,11 @@ exports.start = function (config) {
       svrUserName: config.name,
       svrURL: '127.0.0.1:' + config.port
     })
-    // if (!req.user) {
-    //   res.send(401)
-    // } else {
-    //   res.json(req.user)
-    // }
+  // if (!req.user) {
+  //   res.send(401)
+  // } else {
+  //   res.json(req.user)
+  // }
   })
 
   // Initaialize Socket IO with given port in server config
@@ -148,9 +143,6 @@ exports.start = function (config) {
         })
       }
 
-      stats.connected++
-      // sendStats()
-
       socket.on('client-heartbeat', function (heartbeat) {
         // Update heartbeat mem db
         var update = HBData.findOne({ 'name': heartbeat.name })
@@ -159,22 +151,23 @@ exports.start = function (config) {
         // console.log(heartbeat.name)
         // console.log(update)
 
-        update.data = heartbeat.data
+        // Parse heartbeat.data
+        update.data = JSON.parse(heartbeat.data)
 
-        // console.log(update)
+      // console.log(update)
       })
 
-      socket.on('server-stats', function (heartbeat) {
-        socket.emit('server-stats', stats)
-        // sendStats()
-      })
+      // socket.on('server-stats', function (heartbeat) {
+      //   socket.emit('server-stats', stats)
+      //   // sendStats()
+      // })
 
       socket.on('disconnect', function () {
         // Remove client from live DB data
         console.log('%s Disconnected', socket.client.id)
 
         // Get client in hb array
-        var clientInHBArr = HBData.findOne({ 'session': socket.client.id })        
+        var clientInHBArr = HBData.findOne({ 'session': socket.client.id })
         // console.log('clientInHBArr:', clientInHBArr)
 
         // Remove from hb array
@@ -182,10 +175,8 @@ exports.start = function (config) {
           HBData.remove(clientInHBArr)
         }
 
-        // Now show array
-        // console.log('@@@@ NEW ARRAY:', HBData.data)
-
-        // sendStats()
+      // Now show array
+      // console.log('@@@@ NEW ARRAY:', HBData.data)
       })
     }
   })
@@ -195,16 +186,17 @@ exports.start = function (config) {
     // console.log('Socket ID:', socket.id)
     var currentAdmins = ConnectedAdmins.data
     // console.log('connected admins', currentAdmins)
-    // for each admin
+
+    // Prep data for emit.to
+    var prepData = HBData.data
+
     for (var index = 0; index < currentAdmins.length; index++) {
       var admin = currentAdmins[index]
       // console.log('Session ID', admin.session)
       // console.log('Send Stats To Admin!')
       sio.to(admin.session).emit('server-stats', {
-        stats: stats,
-        hbData: HBData.data
+        hbData: prepData
       })
     }
   }, 1000)
-  
 }

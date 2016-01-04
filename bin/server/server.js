@@ -41,18 +41,17 @@ exports.start = function (config) {
   var silent = config.silent
 
   // Listen for start of handshakes from clients
+  app.get('/', function (req, res) {
+    res.send(404)
+  })
+
+  // Listen for admins connecting to monitoring panel
   app.get('/admin', function (req, res) {
     // Send local server monitoring panel
     res.render(path.join(__TW, '/resources/server/www/index'), {
       // Send server's key & name for logging in locally
-      svrUserName: config.name,
-      svrURL: '127.0.0.1:' + config.port
+      svrUserName: config.name
     })
-  // if (!req.user) {
-  //   res.send(401)
-  // } else {
-  //   res.json(req.user)
-  // }
   })
 
   // Initaialize Socket IO with given port in server config
@@ -87,19 +86,30 @@ exports.start = function (config) {
               socket_id: socket.id
             })
 
-            return callback(null, 'authd')
+            return callback(null, 'authenticated')
           } else {
             return callback(new Error('Authentication error!'))
           }
         })
       } else {
+        // Check if client is in the HBData MemDB
+        var inMemDB = HBData.findOne({
+          name: data.name,
+          sha_id: data.sha_id
+        })
+
+        // Refuse new user if !Admin & inMemDB === true
+        if (inMemDB && config.name !== data.name) {
+          console.log('Disconnecting New Duplicate: %s w/Different SocketID!'.red, data.name)
+          return callback(new Error('Authentication error - Duplicate Client!'))
+        }
+
         // Normal Clients - Lookup client in DB
         DB.client.get({
           name: data.name,
           sha_id: data.sha_id
         }, function (result) {
-          // Results = True; and the client & pubkey could be fetched from
-          // the DB
+          // Results = True; and the client & pubkey could be fetched from the DB
           if (result) {
             // Validate payload using Client's stored Public Key
             Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
@@ -111,7 +121,24 @@ exports.start = function (config) {
                   socket_id: socket.id
                 })
 
-                return callback(null, 'authd')
+                // Add client to HBData array
+                // Ignore Admins (current server via browser)
+                if (!inMemDB && config.name !== data.name) {
+                  if (!silent) {
+                    console.log('TheWatcher >> Server >> MemDB::HBData(add:%s)', data.name)
+                  }
+
+                  // Create entry for new client
+                  HBData.insert({
+                    name: data.name,
+                    sha_id: data.sha_id,
+                    socket_id: socket.client.id,
+                    data: {}
+                  })
+                }
+
+                // Good callback - Client authenticated!
+                return callback(null, 'authenticated')
               } else {
                 return callback(new Error('Authentication error!'))
               }
@@ -124,48 +151,17 @@ exports.start = function (config) {
     },
     postAuthenticate: function (socket, data) {
       console.log('Socket IO POSTAuth, User: %s, SID: %s', data.name, socket.client.id)
-
-      var name = data.name
-      socket.client.user = name
-
-      // Check if client is in the HBData MemDB
-      var inMemDB = HBData.findOne({
-        name: name,
-        socket_id: socket.client.id
-      })
-
-      // Add client to HBData array
-      // Ignore Admins (current server via browser)
-      if (!inMemDB && config.name !== data.name) {
-        if (!silent) {
-          console.log('TheWatcher >> Server >> MemDB::HBData(add:%s)', name)
-        }
-
-        HBData.insert({
-          name: name,
-          socket_id: socket.client.id,
-          data: {}
-        })
-      }
+      socket.client.user = data.name
 
       socket.on('client-heartbeat', function (heartbeat) {
         // Update heartbeat mem db
         var update = HBData.findOne({ 'name': heartbeat.name })
-
-        // console.log(HBData)
-        // console.log(heartbeat.name)
-        // console.log(update)
 
         // Parse heartbeat.data
         update.data = JSON.parse(heartbeat.data)
 
       // console.log(update)
       })
-
-      // socket.on('server-stats', function (heartbeat) {
-      //   socket.emit('server-stats', stats)
-      //   // sendStats()
-      // })
 
       socket.on('disconnect', function () {
         // Remove client from live DB data
@@ -177,9 +173,6 @@ exports.start = function (config) {
         // If Admin get in admin array
         var clientInAdminArr = ConnectedAdmins.findOne({ 'socket_id': socket.client.id })
 
-        // console.log('########', clientInAdminArr)
-        // console.log('clientInHBArr:', clientInHBArr)
-
         // Remove from hb array
         if (clientInHBArr) {
           HBData.remove(clientInHBArr)
@@ -189,26 +182,20 @@ exports.start = function (config) {
         if (clientInAdminArr) {
           ConnectedAdmins.remove(clientInAdminArr)
         }
-
-      // Now show array
-      // console.log('@@@@ NEW ARRAY:', HBData.data)
       })
     }
   })
 
   setInterval(function () {
-    // console.log('Send Stats Called..')
-    // console.log('Socket ID:', socket.id)
+    // Currently connected admin clients
     var currentAdmins = ConnectedAdmins.data
-    // console.log('connected admins', currentAdmins)
 
-    // Prep data for emit.to
+    // Prep data for emit.to of clients connected to server
     var prepData = HBData.data
 
+    // Emit to each connected admin
     for (var index = 0; index < currentAdmins.length; index++) {
       var admin = currentAdmins[index]
-      // console.log('socket_id ID', admin.socket_id)
-      // console.log('Send Stats To Admin!')
       sio.to(admin.socket_id).emit('server-stats', {
         hbData: prepData,
         adminsData: currentAdmins

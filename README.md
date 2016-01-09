@@ -34,6 +34,47 @@ git clone https://github.com/TheDoxMedia/thewatcher.git
 npm install
 ```
 
+##### First use walkthrough
+
+> Where the command/step should be performed for each step will be marked like: `[server]` 
+
+1. `[server]` A server is needed, on the server machine run `thewatcher -s server`, the
+prompts will walk through setting up the Database & server information/keys which will
+be located under `./conf`.
+
+2. `[server]` Preparing the Database structure, run `thewatcher --db setup`, this will load
+the server.json, connect to the provided DB & table and setup the structure (if not already
+present).  (Note: The DB Table must exist & at least be empty for this step)
+
+  >`[server]` At this point the server can be started using `thewatcher -m server`
+
+3. `[client]` Setup a client. The same as with the server, we need to run the client setup to
+create the proper .json & client keys. On the client machine, run `thewatcher -s client`
+to begin the prompts.
+
+4. `[client]` After completing 3, the client must be loaded into the server's clients database
+in order for the client to authenticate and transmit its status/stats. Run `thewatcher --export client /path/to/save.json`
+
+ > **Why not import the default client.json?** The default `/conf/client.json` only contains
+ paths to the client's keys. Running the export places the keys into the one exported
+ `client.json` file for easy transport/server add/import.
+
+5. `[server]` Adding the new client we created to the server's clients. On the server
+run `thewatcher -a /path/to/client.json` pointing to the `client.json` we brought over
+from the client machine containing the keys.
+
+ That's it.  For new clients, they only need to be created and added to the server.
+
+6. (Optional) `[server]` You can navigate to `https://127.0.0.1:9905/admin`, once here
+provide the server's private key (`./conf/SVR_PrivateKey`) to perform a client-like socket
+authentication and display all connected client's and admins along with the currently
+available clients stats.
+
+Side note: The client can be created on the server machine, `client.json` exported and
+moved to the client machine - the config-loader will understand if it sees the raw key
+instead of a path when running for either the server or client mode startup.
+
+
 ---
 
 ### # Running via cmd / shell
@@ -127,21 +168,23 @@ thewatcher --db setup
 ---
 
 ### # Versions
-##### 1.0.0 - `** Rebuilding (Current Master/Dev Branches) **`
-  - Rebuild from demo/concept (0.0.1 => 1.0.0).
-      - Memory DB for storing heartbeat/client current data.
-      - MySQL (See docs for supported) DB for storing clients.
-      - Database migrations.
-      - Better Client & Server config generate.
-      - PGP keys on client used to help verify data sent to server.
-      - Client config & key exporting.
-      - Redone client authentication.
-      - Better command line support & options.
-      - Available via npm.
-      - WebSocket for client <=> server data vs restful from 0.0.1.
-      - Some initial support/testin for thewatcher-gui. (More to come)
-      - Rename from NightWatch to TheWatcher.
+##### 1.0.1
+  - Memory DB for storing heartbeat/client current data.
+  - MySQL (See docs for supported) DB for storing clients.
+  - Database migrations.
+  - Better Client & Server config generate.
+  - PGP keys on client used to help verify data sent to server.
+  - Client config & key exporting.
+  - Redone client authentication.
+  - Better command line support & options.
+  - Available via npm.
+  - WebSocket for client <=> server data vs restful from 0.0.1.
+  - Some initial support/testin for thewatcher-gui. (More to come)
+  - Rename from NightWatch to TheWatcher.
+  - More complete readme & walkthrough.
         
+##### 1.0.0
+  - Used for rebuilding and prep for full release. See >=1.0.1.
 
 ##### 0.0.1
   - Initial release.

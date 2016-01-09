@@ -1,22 +1,23 @@
-/* global __TW */
-
 var crypto = require('crypto')
 var prompt = require('prompt')
 var fs = require('fs')
 var openpgp = require('openpgp')
 var path = require('path')
 
+// Shorten proc.env
+var Env = process.env
+
 module.exports = function (calling) {
   // Load default config layout from template js
-  var template = require(path.join(__TW, '/resources/client/templates/config'))
+  var template = require(path.join(Env.PWD, '/resources/client/templates/config'))
 
   var optional = arguments[0]
   var callback = arguments[1]
 
-  var confDefaultPath = path.join(__TW, '/conf/')
+  var confDefaultPath = path.join(Env.PWD, '/conf/')
 
   // Check for default config path (#2)
-  fs.stat(__TW + '/conf/', function (err, stats) {
+  fs.stat(Env.PWD + '/conf/', function (err, stats) {
     if (err) {
       // The ./conf dir does not exist
       if (err.code === 'ENOENT') {
@@ -64,7 +65,7 @@ module.exports = function (calling) {
 }
 
 function create_json (data) {
-  var confDefaultFile = path.join(__TW, 'conf/client.json')
+  var confDefaultFile = path.join(Env.PWD, 'conf/client.json')
 
   // Write client.json
   return fs.writeFile(confDefaultFile, JSON.stringify(data, null, '\t'))
@@ -80,7 +81,7 @@ function id_gen (name) {
 }
 
 function generate_key (userInput, callback) {
-  var keysDefaultPath = path.join(__TW, '/conf/keys/')
+  var keysDefaultPath = path.join(Env.PWD, '/conf/keys/')
 
   var options = {
     numBits: 2048,
@@ -108,15 +109,15 @@ function generate_key (userInput, callback) {
 
         // Save keys to files
         // [PRI] {install}/conf/keys/PrivateKey.pgp
-        fs.writeFileSync(path.join(__TW, 'conf/keys/PrivateKey'), privkey)
+        fs.writeFileSync(path.join(Env.PWD, 'conf/keys/PrivateKey'), privkey)
 
         // [PUB] {install}/conf/keys/PublicKey.pgp
-        fs.writeFileSync(path.join(__TW, 'conf/keys/PublicKey.pgp'), pubkey)
+        fs.writeFileSync(path.join(Env.PWD, 'conf/keys/PublicKey.pgp'), pubkey)
 
         // Callback
         callback({
-          Private: path.join(__TW, 'conf/keys/PrivateKey'),
-          Public: path.join(__TW, 'conf/keys/PublicKey.pgp')
+          Private: path.join(Env.PWD, 'conf/keys/PrivateKey'),
+          Public: path.join(Env.PWD, 'conf/keys/PublicKey.pgp')
         })
       })
       .catch(function (err) {

@@ -7,15 +7,15 @@ var TheWatcher = require('./app')
 var minimist = require('minimist')
 var multiline = require('multiline')
 var packageJson = require('../package.json')
+var path = require('path')
 // var child_process = require('child_process')
 
 process.title = 'TheWatcher'
+
 process.on('exit', function () {
   console.log('TheWatcher exiting..'.cyan)
 })
 
-var App = new TheWatcher()
-var TW_MODE // Undefined yet - Set only when using
 // thewatcher -m <server|client>
 
 // Parse args
@@ -38,16 +38,31 @@ var args = minimist(process.argv.slice(2), {
 
 // Setup a client or server & setup its {type}.json
 if (args.setup) {
-  App.utils[args.setup].setup()
+  TheWatcher.utils[args.setup].setup()
 } else if (args.mode) { // Start TheWatcher in requested mode
-  TW_MODE = args.mode
-  App[TW_MODE]()
+
+  switch (args.mode) {
+    case 'server':
+      var server = new TheWatcher.Server()
+      server.start()
+
+      // setTimeout(function () {
+      //   server.close()
+      // }, 6000)
+
+      break
+    case 'client':
+      var client = new TheWatcher.Client()
+      client.start()
+      break
+    default:
+      console.log('Valid modes are: server and client'.red)
+      break
+  }
 } else if (args.add) {
-  var AppManage = new App.Manage()
-  AppManage.addClient(args.add)
+  TheWatcher.manage.add.client(args.add)
 } else if (args.export) {
-  var AppManage = new App.Manage()
-  AppManage.exportClientConf(args)
+  TheWatcher.manage.export.client(args)
 } else if (args.db) {
   extendedUtils(args.db)
 } else {
@@ -58,11 +73,9 @@ if (args.setup) {
 }
 
 function extendedUtils (dbArg) {
-  var AppManage = new App.Manage()
-
   switch (dbArg) {
     case 'setup':
-      AppManage.dbSetup()
+      TheWatcher.manage.setupDB()
       break
 
     default:
@@ -86,6 +99,7 @@ function fullText () {
       -m, --mode    <server|client>
       -s, --setup   <server|client>
       --export      <client> <path_to_save>
+      --db          <setup>
 
    Examples:
       thewatcher -m server  Start in server mode

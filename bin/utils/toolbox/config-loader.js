@@ -1,7 +1,8 @@
-/* global __TW */
 var fs = require('fs')
 var keyReader = require('./key-reader')
 var path = require('path')
+
+var Env = process.env
 
 module.exports = function (type) {
   var configPath // undefined
@@ -10,7 +11,7 @@ module.exports = function (type) {
   var optPath = (arguments[1] !== undefined ? arguments[1] : undefined)
 
   // Default config location and name based off type
-  var defaultPath = path.join(__TW, 'conf/', type + '.json')
+  var defaultPath = path.join(Env.PWD, 'conf/', type + '.json')
 
   // Optional override of configPath if arguments[1] is set.
   // Set config path

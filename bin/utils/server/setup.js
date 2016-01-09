@@ -1,22 +1,24 @@
-/* global __TW */
 var crypto = require('crypto')
 var prompt = require('prompt')
 var fs = require('fs')
 var openpgp = require('openpgp')
 var path = require('path')
 
+// Shorten proc.env
+var Env = process.env
+
 module.exports = function () {
   // Load default config layout from template js
   var template = require(path.join(
-    __TW, '/resources/server/templates/config'))
+    Env.PWD, '/resources/server/templates/config'))
 
   var optional = arguments[0]
   var callback = arguments[1]
 
-  var confDefaultPath = path.join(__TW, '/conf/')
+  var confDefaultPath = path.join(Env.PWD, '/conf/')
 
   // Check for default config path (#2)
-  fs.stat(__TW + '/conf/', function (err, stats) {
+  fs.stat(Env.PWD + '/conf/', function (err, stats) {
     if (err) {
       // The ./conf dir does not exist
       if (err.code === 'ENOENT') {
@@ -65,7 +67,7 @@ module.exports = function () {
 
 function create_json (data) {
   return fs.writeFile(
-    path.join(__TW, 'conf/server.json'),
+    path.join(Env.PWD, 'conf/server.json'),
     JSON.stringify(data, null, '\t')
   )
 }
@@ -80,7 +82,7 @@ function id_gen (name) {
 }
 
 function generate_key (userInput, callback) {
-  var keysDefaultPath = path.join(__TW, '/conf/keys/')
+  var keysDefaultPath = path.join(Env.PWD, '/conf/keys/')
 
   var options = {
     numBits: 2048,
@@ -108,15 +110,15 @@ function generate_key (userInput, callback) {
 
         // Save keys to files
         // [PRI] {install}/conf/keys/SVR_PrivateKey.pgp
-        fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PrivateKey'), privkey)
+        fs.writeFileSync(path.join(Env.PWD, 'conf/keys/SVR_PrivateKey'), privkey)
 
         // [PUB] {install}/conf/keys/SVR_PublicKey.pgp
-        fs.writeFileSync(path.join(__TW, 'conf/keys/SVR_PublicKey.pgp'), pubkey)
+        fs.writeFileSync(path.join(Env.PWD, 'conf/keys/SVR_PublicKey.pgp'), pubkey)
 
         // Callback
         callback({
-          Private: path.join(__TW, 'conf/keys/SVR_PrivateKey'),
-          Public: path.join(__TW, 'conf/keys/SVR_PublicKey.pgp')
+          Private: path.join(Env.PWD, 'conf/keys/SVR_PrivateKey'),
+          Public: path.join(Env.PWD, 'conf/keys/SVR_PublicKey.pgp')
         })
       })
       .catch(function (err) {

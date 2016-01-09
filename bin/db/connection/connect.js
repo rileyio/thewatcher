@@ -1,6 +1,8 @@
-/* global __TW */
 var knex = require('knex')
 var path = require('path')
+
+// Shorten proc.env
+var Env = process.env
 
 module.exports = function (config) {
   var connection = knex({
@@ -14,7 +16,7 @@ module.exports = function (config) {
       charset: 'utf8'
     },
     migrations: {
-      directory: path.join(__TW, 'migrations')
+      directory: path.join(Env.PWD, 'migrations')
     }
   })
 

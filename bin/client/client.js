@@ -7,84 +7,98 @@
 
 var io = require('socket.io-client')
 var os = require('os')
-
 var Utils = require('./../utils/utils')
+var extend = require('xtend')
 
-exports.start = function (config) {
-  var socket = io.connect('wss://' + config.server, {
+var Client = module.exports = function () {
+  var self = this
+
+  // Load server config
+  self.conf = undefined
+}
+
+Client.prototype.start = function () {
+  var self = this
+
+  // Load client config
+  self.conf = (self.conf === undefined)
+    ? extend(Utils.client.load.config('client'), self.conf)
+    : self.conf
+
+  self.socket = io.connect('wss://' + self.conf.server, {
     'secure': true,
     'forceNew': true
   })
 
-  socket.on('connect', function (sio) {
+  self.socket.on('connect', function (sio) {
     var prepMsg = JSON.stringify({
-      session: socket.id,
-      sha_id: config.id,
-      name: config.name
+      session: self.socket.id,
+      sha_id: self.conf.id,
+      name: self.conf.name
     })
 
-    Utils.client.sign(config.key.private, prepMsg, function (signed) {
+    Utils.client.sign(self.conf.key.private, prepMsg, function (signed) {
       // console.log(signed)
 
-      socket.emit('authentication', {
-        name: config.name,
-        sha_id: config.id,
+      self.socket.emit('authentication', {
+        name: self.conf.name,
+        sha_id: self.conf.id,
         signed: signed
       })
     })
   })
 
-  socket.on('authenticated', function () {
+  self.socket.on('authenticated', function () {
     console.log('Socket Connected!')
 
     // Start Data heartbeat
-    HeartBeat()
+    self.heartbeat()
   })
 
-  socket.on('unauthorized', function (err) {
+  self.socket.on('unauthorized', function (err) {
     console.log('There was an error with the authentication:', err.message)
   })
 
-  socket.on('reconnecting', function (attempt) {
+  self.socket.on('reconnecting', function (attempt) {
     console.log('Reconnecting', attempt)
   })
 
-  socket.on('disconnect', function () {
+  self.socket.on('disconnect', function () {
     console.log('Socket Disconnect!')
   })
 
-  socket.on('error', function (err) {
+  self.socket.on('error', function (err) {
     console.log('Error:', err)
   })
 
   console.log('TheWatcher >> Client >> Started!'.green)
+}
 
-  // })
+Client.prototype.heartbeat = function () {
+  var self = this
 
-  function HeartBeat () {
-    setInterval(function () {
-      var heartbeatTime = Date.now()
+  setInterval(function () {
+    var heartbeatTime = Date.now()
 
-      // console.log(heartbeatTime)
+    // console.log(heartbeatTime)
 
-      socket.emit('client-heartbeat', {
-        name: config.name,
-        time: heartbeatTime,
-        data: HeartBeatData()
-      })
-    }, config.interval)
-  }
-
-  function HeartBeatData () {
-    return JSON.stringify({
-      uptime: os.uptime(),
-      memory: {
-        free: os.freemem(),
-        total: os.totalmem()
-      },
-      cup: {
-        loadavg: os.loadavg()
-      }
+    self.socket.emit('client-heartbeat', {
+      name: self.conf.name,
+      time: heartbeatTime,
+      data: HeartBeatData()
     })
-  }
+  }, self.conf.interval)
+}
+
+function HeartBeatData () {
+  return JSON.stringify({
+    uptime: os.uptime(),
+    memory: {
+      free: os.freemem(),
+      total: os.totalmem()
+    },
+    cup: {
+      loadavg: os.loadavg()
+    }
+  })
 }

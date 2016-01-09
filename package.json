@@ -44,6 +44,8 @@
     "xtend": "^4.0.1"
   },
   "devDependencies": {
+    "mocha": "^2.3.4",
+    "mocha-eslint": "^1.0.0",
     "should": "^8.0.2"
   }
 }

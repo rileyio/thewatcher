@@ -1,8 +1,9 @@
 TheWatcher
 ==========
+
 A client / server monitoring tool (*Previously named: NightWatch; Keeps watch over its clients through the night*)
 
-[![NPM Version][npm-badge]][npm-url] [![Dependency Status][david-dm-badge]][david-dm-url] [![Code Climate][code-climate-badge]][code-climate-url]
+[![NPM Version][npm-badge]][npm-url] [![Dependency Status][david-dm-badge]][david-dm-url] [![Code Climate][code-climate-badge]][code-climate-url] [![Gitter][gitter-badge]][gitter-url]
 
 [![js-standard-style][js-standard-badge]][js-standard-url]
 
@@ -201,3 +202,5 @@ thewatcher --db setup
 [david-dm-badge]: https://img.shields.io/david/TheDoxMedia/thewatcher.svg?style=flat-square
 [js-standard-badge]: https://cdn.rawgit.com/feross/standard/master/badge.svg
 [js-standard-url]: https://github.com/feross/standard
+[gitter-badge]: https://img.shields.io/gitter/room/nwjs/nw.js.svg?style=flat-square
+[gitter-url]: https://gitter.im/TheDoxMedia/thewatcher

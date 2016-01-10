@@ -19,8 +19,8 @@ module.exports = {
   mode: 'server',
 
   // Port for listening
-  // Default: 3306
-  port: 3306,
+  // Default: 9905
+  port: 9905,
 
   // PGP Key path (Generated during `node index.js -s server`)
   key: {

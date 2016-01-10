@@ -1,5 +1,7 @@
 TheWatcher
 ==========
+
+[![Join the chat at https://gitter.im/TheDoxMedia/thewatcher](https://badges.gitter.im/TheDoxMedia/thewatcher.svg)](https://gitter.im/TheDoxMedia/thewatcher?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 A client / server monitoring tool (*Previously named: NightWatch; Keeps watch over its clients through the night*)
 
 [![NPM Version][npm-badge]][npm-url] [![Dependency Status][david-dm-badge]][david-dm-url] [![Code Climate][code-climate-badge]][code-climate-url]

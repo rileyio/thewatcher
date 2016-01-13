@@ -33,10 +33,11 @@ Manage.setupDB = function () {
 
 /**
  * Adds a client.json to the database.
- * @param {string} Location of the .json config file to add.
+ * @param {string} confPath - Location of the .json config file to add.
+ * @param {callback} cb - Optional callback, called after DB add.
  */
 Manage.add = {
-  client: function (confPath) {
+  client: function (confPath, cb) {
     // Call prep
     Manage.prep()
 
@@ -44,7 +45,7 @@ Manage.add = {
     var clientConfig = Utils.client.load.config('client', confPath)
 
     Manage.DB.client.add(clientConfig, function (ret) {
-      process.exit(0)
+      (typeof cb === 'function') ? cb(ret) : process.exit(0)
     })
   }
 }

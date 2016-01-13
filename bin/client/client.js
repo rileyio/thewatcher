@@ -9,13 +9,18 @@ var io = require('socket.io-client')
 var os = require('os')
 var Utils = require('./../utils/utils')
 var extend = require('xtend')
+var EventEmitter = require('events').EventEmitter
+var util = require('util')
 
 var Client = module.exports = function () {
   var self = this
 
   // Load server config
-  self.conf = undefined
+
+  EventEmitter.call(self)
 }
+
+util.inherits(Client, EventEmitter)
 
 Client.prototype.start = function () {
   var self = this
@@ -39,7 +44,6 @@ Client.prototype.start = function () {
 
     Utils.client.sign(self.conf.key.private, prepMsg, function (signed) {
       // console.log(signed)
-
       self.socket.emit('authentication', {
         name: self.conf.name,
         sha_id: self.conf.id,
@@ -49,29 +53,35 @@ Client.prototype.start = function () {
   })
 
   self.socket.on('authenticated', function () {
-    console.log('Socket Connected!')
+    // console.log('Socket Connected!')
+    self.emit('status', null, { message: 'connected' })
 
     // Start Data heartbeat
     self.heartbeat()
   })
 
   self.socket.on('unauthorized', function (err) {
-    console.log('There was an error with the authentication:', err.message)
+    self.emit('status', err, null)
+
+  // console.log('There was an error with the authentication:', err.message)
   })
 
   self.socket.on('reconnecting', function (attempt) {
-    console.log('Reconnecting', attempt)
+    self.emit('status', null, { message: 'reconnecting', attempt: attempt })
   })
 
   self.socket.on('disconnect', function () {
-    console.log('Socket Disconnect!')
+    // console.log('Socket Disconnect!')
+    self.emit('status', null, { message: 'disconnected' })
   })
 
   self.socket.on('error', function (err) {
-    console.log('Error:', err)
+    self.emit('status', err, { message: 'disconnected' })
+
+  // console.log('Error:', err)
   })
 
-  console.log('TheWatcher >> Client >> Started!'.green)
+// console.log('TheWatcher >> Client >> Started!'.green)
 }
 
 Client.prototype.heartbeat = function () {

@@ -4,7 +4,7 @@ var path = require('path')
 // Shorten proc.env
 var Env = process.env
 
-module.exports = function (config) {
+module.exports = function (log, config) {
   var connection = knex({
     client: config.type,
     // debug: true,
@@ -23,11 +23,11 @@ module.exports = function (config) {
   connection.raw('SELECT 1+1 AS result')
     .return() // Return if not any errors
     .then(function () {
-      console.log('TheWatcher >> Server >> DB::Connected!'.green)
+      log.verbose(`Database#Connection(Connected)`)
     })
     .catch(function (err) {
       if (err) throw err
-      console.log('Check DB credentials/connection'.red)
+      log.error(`Database#Connection->Error(Check DB credentials/connection)`)
       process.exit(1)
     })
 

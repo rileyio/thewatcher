@@ -1,10 +1,14 @@
 var ClientQueries = require('./queries/client')
+var Logger = require('./../logger')
 
-var Database = function (config) {
+var Database = module.exports = function (config) {
   var self = this
 
+  // Setup logging
+  self.log = new Logger('Database', 'silly').log
+
   self.config = config
-  self.DB = require('./connection/connect')(self.config)
+  self.DB = require('./connection/connect')(self.log, self.config)
 
   // Options ( DB.client.add, DB.server..)
   self.client = new ClientQueries(self.DB)
@@ -24,13 +28,11 @@ Database.prototype.setup = function () {
   self.DB.migrate.latest()
     .then(function () {
       // return knex.seed.run()
-      console.log('Migration Complete.')
+      self.log.info('Migration Complete.')
       process.exit(0)
     })
     .catch(function (err) {
-      console.log('err', err)
+      self.log.error(err)
       process.exit(1)
     })
 }
-
-module.exports = Database

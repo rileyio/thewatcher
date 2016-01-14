@@ -52,7 +52,12 @@ var Logger = module.exports = function (name, level) {
         timestamp: true,
         json: false,
         showLevel: true,
-        tailable: true
+        tailable: true,
+        formatter: function (args) {
+          // Return string will be passed to logger.
+          return new Date().toLocaleString() + ' ' + args.level.toUpperCase() + ' ' + (undefined !== args.message ? args.message : '') +
+          (args.meta && Object.keys(args.meta).length ? '\n\t' + JSON.stringify(args.meta) : '')
+        }
       })
     ]
   })
@@ -60,10 +65,11 @@ var Logger = module.exports = function (name, level) {
   // Read logs daily - Adding these.
   // Add new line in log to seperate previous instance log.
   self.manual(`
---------------------------------------------------
+---------------------------------------------------
 TheWatcher
   Logger -> Level: ${self.level} -> Size: ${toMB(self.logSize)}MB -> Keep: ${self.maxLogs}
-  Local Time -> ${Date()}
+  Local Time -> ${new Date()}
+  Local Time -> ${new Date().toUTCString()}
   System -> ${os.platform()} -> Release: ${os.release()}
 
 `)

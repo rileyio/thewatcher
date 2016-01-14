@@ -7,13 +7,14 @@ var extend = require('xtend')
 var https = require('https')
 var io = require('socket.io')
 var sioAuth = require('socketio-auth')
-var Utils = require('./../utils/utils')
 var fs = require('fs')
 var path = require('path')
+var Utils = require('./utils/utils')
+var Logger = require('./logger')
 
 // Databases
 var Loki = require('lokijs')
-var Database = require('./../db/database')
+var Database = require('./db/database')
 
 // Shorten proc.env
 var Env = process.env
@@ -23,6 +24,9 @@ var Server = module.exports = function () {
 
   // Set conf
   self.conf = undefined
+
+  // Setup logging
+  self.log = new Logger('Server', 'silly').log
 
   // HTTPS Certificate config
   self.httpsOpts = {
@@ -42,7 +46,7 @@ var Server = module.exports = function () {
 Server.prototype.start = function () {
   var self = this
 
-  console.log('TheWatcher >> Server >> Starting..'.yellow)
+  self.log.info(`Starting..`)
 
   // Load server config if not loaded yet
   self.conf = (self.conf === undefined)
@@ -83,7 +87,7 @@ Server.prototype.start = function () {
 
       // Good to listen
       // Print successful startup
-      console.log('TheWatcher >> Listening @ //%s:%s'.green, host, port)
+      self.log.verbose(`HTTPS::Server->Listening(//${host}:${port})`)
     })
 
   // //////////////////////////////////////////////////////////////
@@ -93,7 +97,7 @@ Server.prototype.start = function () {
   // Setup SocketIO Authentication
   sioAuth(self.io, {
     authenticate: function (socket, data, callback) {
-      console.log('Socket IO Auth (i.e login)')
+      self.log.verbose(`SIO::Auth->Req('${data.name}', ${socket.id}, ${data.sha_id})`)
 
       // If self connecting (i.e. From https://127.0.0.1:<port>/admin)
       if (self.conf.name === data.name) {
@@ -105,8 +109,12 @@ Server.prototype.start = function () {
               socket_id: socket.id
             })
 
+            self.log.debug(`SIO::Auth->Admin(sid: ${socket.id})`)
+
             return callback(null, 'authenticated')
           } else {
+            self.log.debug(`SIO::Auth->Error->Admin(sid: ${socket.id}, error: Signature check failed!)`)
+
             return callback(new Error('Authentication error!'))
           }
         })
@@ -119,7 +127,8 @@ Server.prototype.start = function () {
 
         // Refuse new user if !Admin & inMemDB === true
         if (inMemDB && self.conf.name !== data.name) {
-          console.log('Disconnecting New Duplicate: %s w/Different SocketID!'.red, data.name)
+          self.log.debug(`SIO::Auth->Disconnect(sid: ${socket.id}, error: Duplicate with different SocketID)`)
+
           return callback(new Error('Authentication error - Duplicate Client!'))
         }
 
@@ -143,7 +152,7 @@ Server.prototype.start = function () {
                 // Add client to HBData array
                 // Ignore Admins (current server via browser)
                 if (!inMemDB && self.conf.name !== data.name) {
-                  console.log('TheWatcher >> Server >> MemDB::HBData(add:%s)', data.name)
+                  self.log.debug(`MemDB::HBData->add(name: ${data.name}, sid: ${socket.id}, id: ${data.sha_id})`)
 
                   // Create entry for new client
                   self.HBData.insert({
@@ -157,17 +166,21 @@ Server.prototype.start = function () {
                 // Good callback - Client authenticated!
                 return callback(null, 'authenticated')
               } else {
+                self.log.debug(`SIO::Auth->Error->Client(sid: ${socket.id}, error: Signature check failed!)`)
+
                 return callback(new Error('Authentication error!'))
               }
             })
           } else {
+            self.log.debug(`SIO::Auth->Error->Client(sid: ${socket.id}, error: No client by name & id!)`, data)
+
             return callback(new Error('Client not found'))
           }
         })
       }
     },
     postAuthenticate: function (socket, data) {
-      console.log('Socket IO POSTAuth, User: %s, SID: %s', data.name, socket.client.id)
+      self.log.verbose(`SIO::Client->PostAuth(name: ${data.name}, sid: ${socket.id})`)
       socket.client.user = data.name
 
       socket.on('client-heartbeat', function (heartbeat) {
@@ -182,7 +195,7 @@ Server.prototype.start = function () {
 
       socket.on('disconnect', function () {
         // Remove client from live DB data
-        console.log('%s Disconnected', socket.client.id)
+        self.log.verbose(`SIO::Client->Disconnected(sid: ${socket.client.id})`)
 
         // Get client in hb array
         var clientInHBArr = self.HBData.findOne({ 'socket_id': socket.client.id })

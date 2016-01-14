@@ -12,9 +12,9 @@ var path = require('path')
 
 process.title = 'TheWatcher'
 
-process.on('exit', function () {
-  console.log('TheWatcher exiting..'.cyan)
-})
+// process.on('exit', function () {
+//   console.log('TheWatcher exiting..'.cyan)
+// })
 
 // thewatcher -m <server|client>
 
@@ -45,7 +45,6 @@ if (args.setup) {
     case 'server':
       var server = new TheWatcher.Server()
       server.start()
-
       // setTimeout(function () {
       //   server.close()
       // }, 6000)

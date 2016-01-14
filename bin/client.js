@@ -7,7 +7,7 @@
 
 var io = require('socket.io-client')
 var os = require('os')
-var Utils = require('./../utils/utils')
+var Utils = require('./utils/utils')
 var extend = require('xtend')
 var EventEmitter = require('events').EventEmitter
 var util = require('util')

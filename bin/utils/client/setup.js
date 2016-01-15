@@ -7,10 +7,10 @@ var path = require('path')
 // Shorten proc.env
 var Env = process.env
 
-module.exports = function () {
-  // Load default config layout from template js
-  var template = require(path.join(Env.PWD, '/resources/client/templates/config'))
+// Load default config layout from template js
+var template = require(path.join(Env.PWD, '/resources/client/templates/config'))
 
+module.exports = function () {
   var optional = arguments[0]
   var callback = arguments[1]
 
@@ -41,7 +41,7 @@ module.exports = function () {
         template.lat = optional.lat
         template.lon = optional.lon
         template.created_at = Date.now()
-        template.server = optional.server        
+        template.server = optional.server
         // template.port = optional.port
         template.key.private.path = ret.Private
         template.key.public.path = ret.Public

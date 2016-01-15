@@ -46,7 +46,7 @@ var Server = module.exports = function () {
 Server.prototype.start = function () {
   var self = this
 
-  self.log.info(`Starting..`)
+  self.log.info(`TheWatcher Server Starting`)
 
   // Load server config if not loaded yet
   self.conf = (self.conf === undefined)
@@ -87,7 +87,7 @@ Server.prototype.start = function () {
 
       // Good to listen
       // Print successful startup
-      self.log.verbose(`HTTPS::Server->Listening(//${host}:${port})`)
+      self.log.verbose(`Server Listening @ //${host}:${port}`)
     })
 
   // //////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ Server.prototype.start = function () {
   // Setup SocketIO Authentication
   sioAuth(self.io, {
     authenticate: function (socket, data, callback) {
-      self.log.verbose(`SIO::Auth->Req('${data.name}', ${socket.id}, ${data.sha_id})`)
+      self.log.verbose(`Authenticate sid:${socket.id}, name:'${data.name}', id:${data.sha_id}`)
 
       // If self connecting (i.e. From https://127.0.0.1:<port>/admin)
       if (self.conf.name === data.name) {
@@ -109,11 +109,11 @@ Server.prototype.start = function () {
               socket_id: socket.id
             })
 
-            self.log.debug(`SIO::Auth->Admin(sid: ${socket.id})`)
+            self.log.debug(`Admin Authenticate request sid:${socket.id}`)
 
             return callback(null, 'authenticated')
           } else {
-            self.log.debug(`SIO::Auth->Error->Admin(sid: ${socket.id}, error: Signature check failed!)`)
+            self.log.error(`Admin Authenticate failed sid:${socket.id}, error:Signature check failed!`)
 
             return callback(new Error('Authentication error!'))
           }
@@ -127,7 +127,7 @@ Server.prototype.start = function () {
 
         // Refuse new user if !Admin & inMemDB === true
         if (inMemDB && self.conf.name !== data.name) {
-          self.log.debug(`SIO::Auth->Disconnect(sid: ${socket.id}, error: Duplicate with different SocketID)`)
+          self.log.warn(`Socket Disconnect sid:${socket.id} Duplicate client w/different sid`)
 
           return callback(new Error('Authentication error - Duplicate Client!'))
         }
@@ -152,7 +152,7 @@ Server.prototype.start = function () {
                 // Add client to HBData array
                 // Ignore Admins (current server via browser)
                 if (!inMemDB && self.conf.name !== data.name) {
-                  self.log.debug(`MemDB::HBData->add(name: ${data.name}, sid: ${socket.id}, id: ${data.sha_id})`)
+                  self.log.debug(`MemDB Add sid:${socket.id}, name:${data.name}, id:${data.sha_id}`)
 
                   // Create entry for new client
                   self.HBData.insert({
@@ -166,13 +166,13 @@ Server.prototype.start = function () {
                 // Good callback - Client authenticated!
                 return callback(null, 'authenticated')
               } else {
-                self.log.debug(`SIO::Auth->Error->Client(sid: ${socket.id}, error: Signature check failed!)`)
+                self.log.error(`Authentication Failed sid:${socket.id}, name:${data.name}, Signature check failed!`)
 
                 return callback(new Error('Authentication error!'))
               }
             })
           } else {
-            self.log.debug(`SIO::Auth->Error->Client(sid: ${socket.id}, error: No client by name & id!)`, data)
+            self.log.error(`Authentication Failed sid:${socket.id}, name:${data.name}, No client by name & id!`)
 
             return callback(new Error('Client not found'))
           }
@@ -180,10 +180,12 @@ Server.prototype.start = function () {
       }
     },
     postAuthenticate: function (socket, data) {
-      self.log.verbose(`SIO::Client->PostAuth(name: ${data.name}, sid: ${socket.id})`)
+      self.log.verbose(`Client Authenticated Success name:${data.name}, sid:${socket.id}`)
       socket.client.user = data.name
 
       socket.on('client-heartbeat', function (heartbeat) {
+        self.log.debug(`Client Heartbeat sid:${socket.client.id}, name:${socket.client.user}`)
+
         // Update heartbeat mem db
         var update = self.HBData.findOne({ 'name': heartbeat.name })
 
@@ -195,7 +197,7 @@ Server.prototype.start = function () {
 
       socket.on('disconnect', function () {
         // Remove client from live DB data
-        self.log.verbose(`SIO::Client->Disconnected(sid: ${socket.client.id})`)
+        self.log.verbose(`Client Disconnected sid:${socket.client.id}, name:${socket.client.user}`)
 
         // Get client in hb array
         var clientInHBArr = self.HBData.findOne({ 'socket_id': socket.client.id })
@@ -206,10 +208,12 @@ Server.prototype.start = function () {
         // Remove from hb array
         if (clientInHBArr) {
           self.HBData.remove(clientInHBArr)
+          self.log.debug(`MemDB::Clients removed sid:${socket.client.id}, name:${socket.client.user}`)
         }
 
         // Remove from Connected Admins MemDB
         if (clientInAdminArr) {
+          self.log.debug(`MemDB::Admins removed sid:${socket.client.id}, name:${socket.client.user}`)
           self.ConnectedAdmins.remove(clientInAdminArr)
         }
       })
@@ -238,4 +242,5 @@ Server.prototype.close = function () {
   var self = this
 
   self.https.close()
+  self.log.info(`Server close called - No longer listening`)
 }

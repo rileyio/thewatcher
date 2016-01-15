@@ -23,11 +23,11 @@ module.exports = function (log, config) {
   connection.raw('SELECT 1+1 AS result')
     .return() // Return if not any errors
     .then(function () {
-      log.verbose(`Database#Connection(Connected)`)
+      log.verbose(`Database connection established host:${config.host}`)
     })
     .catch(function (err) {
       if (err) throw err
-      log.error(`Database#Connection->Error(Check DB credentials/connection)`)
+      log.error(`Database Connection Error: Check credentials/connection)`)
       process.exit(1)
     })
 

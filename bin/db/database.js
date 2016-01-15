@@ -1,5 +1,6 @@
 var ClientQueries = require('./queries/client')
 var Logger = require('./../logger')
+var connection = require('./connection/connect')
 
 var Database = module.exports = function (config) {
   var self = this
@@ -8,7 +9,7 @@ var Database = module.exports = function (config) {
   self.log = new Logger('Database', 'silly').log
 
   self.config = config
-  self.DB = require('./connection/connect')(self.log, self.config)
+  self.DB = connection(self.log, self.config)
 
   // Options ( DB.client.add, DB.server..)
   self.client = new ClientQueries(self.DB)

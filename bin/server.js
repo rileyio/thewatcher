@@ -37,10 +37,6 @@ var Server = module.exports = function () {
   // Express config
   // -- Set View Engine
   app.set('view engine', 'ejs')
-
-  // Set space for running Sio
-  self.io
-  self.https
 }
 
 Server.prototype.start = function () {

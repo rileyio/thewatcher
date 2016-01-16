@@ -1,0 +1,14 @@
+language: node_js
+
+services:
+  - mysql
+
+node_js:
+  - "stable"
+  - "4.2.4"
+
+before_script:
+  - mysql -e 'create database thewatcher;'
+
+before_install:
+  - npm --version

@@ -9,10 +9,10 @@ module.exports = function (log, config) {
     client: config.type,
     // debug: true,
     connection: {
-      host: config.host,
-      user: config.user,
-      password: config.pass,
-      database: config.database,
+      host: Env.TW_DB_HOST || config.host,
+      user: Env.TW_DB_USER || config.user,
+      password: Env.TW_DB_PASS || config.pass,
+      database: Env.TW_DB_NAME || config.database,
       charset: 'utf8'
     },
     migrations: {
@@ -23,12 +23,11 @@ module.exports = function (log, config) {
   connection.raw('SELECT 1+1 AS result')
     .return() // Return if not any errors
     .then(function () {
-      log.verbose(`Database connection established host:${config.host}`)
+      log.verbose(`Database connection established host:${Env.TW_DB_HOST || config.host}`)
     })
     .catch(function (err) {
-      if (err) throw err
       log.error(`Database Connection Error: Check credentials/connection)`)
-      process.exit(1)
+      if (err) throw err
     })
 
   return connection

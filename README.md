@@ -158,6 +158,20 @@ inside this config file.
 thewatcher --db setup
 ```
 
+### Configuration
+
+> Overrides to the `<type>.json` available starting with 1.1.0.
+
+The Environment Variable being used first with the `<type>.json` as the fallback.
+
+#### Available
+```bash
+# Database
+TW_DB_HOST=127.0.0.1
+TW_DB_USER=user
+TW_DB_PASS=pass
+TW_DB_NAME=thewatcher
+```
 
 ---
 

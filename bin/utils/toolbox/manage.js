@@ -22,13 +22,17 @@ Manage.prep = function () {
   self.DB = new Database(self.conf.db)
 }
 
-Manage.setupDB = function () {
+/**
+ * Runs DB migration.
+ * @param {callback} cb - Optional callback, called after migrate.
+ */
+Manage.setupDB = function (cb) {
   var self = this
   self.prep()
 
   // Setup Primary DB
   self.DB = new Database(self.conf.db)
-  self.DB.setup()
+  self.DB.setup(cb)
 }
 
 /**
@@ -45,7 +49,7 @@ Manage.add = {
     var clientConfig = Utils.client.load.config('client', confPath)
 
     Manage.DB.client.add(clientConfig, function (ret) {
-      (typeof cb === 'function') ? cb(ret) : process.exit(0)
+      typeof cb === 'function' ? cb(ret) : process.exit(0)
     })
   }
 }

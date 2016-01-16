@@ -5,7 +5,7 @@ var TheWatcher = require('../bin/app')
 var should = require('should')
 
 describe('Loading TheWatcher', function () {
-  // process.env.NODE_ENV = 'test'
+  process.env.NODE_ENV = 'test'
   var server = new TheWatcher.Server()
   var client = new TheWatcher.Client()
 
@@ -29,17 +29,14 @@ describe('Loading TheWatcher', function () {
 
   // Client Test Config
   var clientConf = {
-    name: 'TheWatcher - Test Client',
+    name: 'TheWatcher-Test Client',
     server: '127.0.0.1:9905',
     lat: '0.0',
     lon: '0.0'
   }
 
-  after(function (next) {
-    setTimeout(function () {
-      server.close()
-      next()
-    }, 5000)
+  after(function () {
+    server.close()
   })
 
   describe('Server', function () {
@@ -56,59 +53,63 @@ describe('Loading TheWatcher', function () {
       })
     })
 
-    it('TheWatcher start in server mode', function (next) {
+    it('db migration', function (done) {
+      TheWatcher.manage.setupDB(done)
+    })
+
+    it('TheWatcher start in server mode', function (done) {
+      this.timeout(10000) // Give up to 10 seconds
+
       // Start TheWatcher in server mode
-      server.start()
-      next()
+      server.start(done)
     })
   })
 
   describe('Client', function () {
-    it('generate client config & keys', function (next) {
+    it('generate client config & keys', function (done) {
       // Set timeout to prevent default timeout on key gen
       this.timeout(100000)
 
       TheWatcher.utils.client.setup(clientConf, function (err) {
         if (err) {
-          next(err)
+          done(err)
         } else {
-          next()
+          done()
         }
       })
     })
 
     // Planned to fail (Not in server DB)
-    it('start in client mode', function (next) {
+    it('start in client mode', function (done) {
       this.timeout(10000)
       // Start TheWatcher in client mode
       client.start()
-      next()
+      done()
     })
 
-    it('should be unauthorized connecting to server', function (next) {
+    it('should be unauthorized connecting to server', function (done) {
       client.on('status', function (err) {
+        // console.log(err.message)
         err.message.should.be.eql('Client not found')
-        next()
+        done()
       })
     })
 
-    it('add client to server', function (next) {
-      TheWatcher.manage.add.client('./conf', next)
-      // next()
-    })
-
-    it('should get duplicate client', function (next) {
-      this.timeout(10000)
-      // Start TheWatcher in client mode
-      client.start()
-
-      client.on('status', function (err, status) {
-        err.message.should.be.eql('Authentication error - Duplicate Client!')
-        next()
+    it('add client to server', function (done) {
+      TheWatcher.manage.add.client('./conf', function () {
+        done()
       })
     })
 
-  after(function () {
-    server.close()
+    // it('should get duplicate client', function (done) {
+    //   this.timeout(10000)
+    //   // Start TheWatcher in client mode
+    //   client.start()
+
+  //   client.on('status', function (err, status) {
+  //     err.message.should.be.eql('Authentication error - Duplicate Client!')
+  //     done()
+  //   })
+  // })
   })
 })

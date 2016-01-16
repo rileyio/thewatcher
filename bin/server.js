@@ -39,7 +39,7 @@ var Server = module.exports = function () {
   app.set('view engine', 'ejs')
 }
 
-Server.prototype.start = function () {
+Server.prototype.start = function (cb) {
   var self = this
 
   self.log.info(`TheWatcher Server Starting`)
@@ -48,9 +48,6 @@ Server.prototype.start = function () {
   self.conf = (self.conf === undefined)
     ? extend(Utils.server.load.config('server'))
     : self.conf
-
-  // Setup Primary DB
-  self.DB = new Database(self.conf.db)
 
   // Setup MemDB
   self.MemDB = new Loki('loki.json')
@@ -61,177 +58,185 @@ Server.prototype.start = function () {
   // Admin connections
   self.ConnectedAdmins = self.MemDB.addCollection('connected-admins')
 
-  // Listen for start of handshakes from clients
-  app.get('/', function (req, res) {
-    res.send(404)
-  })
+  // Setup Primary DB
+  self.DB = new Database(self.conf.db)
+  self.DB.ready(function (err, status) {
+    if (err) throw err
 
-  // Listen for admins connecting to monitoring panel
-  app.get('/admin', function (req, res) {
-    // Send local server monitoring panel
-    res.render(path.join(Env.PWD, '/resources/server/www/index'), {
-      // Send server's key & name for logging in locally
-      svrUserName: self.conf.name
-    })
-  })
-
-  // Initaialize Socket IO with given port in server config
-  self.https = https.createServer(self.httpsOpts, app)
-    .listen(self.conf.port, function () {
-      var host = self.https.address().address
-      var port = self.https.address().port
-
-      // Good to listen
-      // Print successful startup
-      self.log.verbose(`Server Listening @ //${host}:${port}`)
+    // Listen for start of handshakes from clients
+    app.get('/', function (req, res) {
+      res.send(404)
     })
 
-  // //////////////////////////////////////////////////////////////
-  // ///  Socket.IO Below /////////////////////////////////////////
-  self.io = io(self.https)
+    // Listen for admins connecting to monitoring panel
+    app.get('/admin', function (req, res) {
+      // Send local server monitoring panel
+      res.render(path.join(Env.PWD, '/resources/server/www/index'), {
+        // Send server's key & name for logging in locally
+        svrUserName: self.conf.name
+      })
+    })
 
-  // Setup SocketIO Authentication
-  sioAuth(self.io, {
-    authenticate: function (socket, data, callback) {
-      self.log.verbose(`Authenticate sid:${socket.id}, name:'${data.name}', id:${data.sha_id}`)
+    // Initaialize Socket IO with given port in server config
+    self.https = https.createServer(self.httpsOpts, app)
+      .listen(self.conf.port, function () {
+        var host = self.https.address().address
+        var port = self.https.address().port
 
-      // If self connecting (i.e. From https://127.0.0.1:<port>/admin)
-      if (self.conf.name === data.name) {
-        Utils.server.verifySig(self.conf.key.public, data.signed, function (ret) {
-          if (ret.signatures[0].valid) {
-            // Store admin in ConnectedAdmins MemDB
-            self.ConnectedAdmins.insert({
-              name: data.name,
-              socket_id: socket.id
-            })
+        // Good to listen
+        // Print successful startup
+        self.log.verbose(`Server Listening @ //${host}:${port}`)
+      })
 
-            self.log.debug(`Admin Authenticate request sid:${socket.id}`)
+    // //////////////////////////////////////////////////////////////
+    // ///  Socket.IO Below /////////////////////////////////////////
+    self.io = io(self.https)
 
-            return callback(null, 'authenticated')
-          } else {
-            self.log.error(`Admin Authenticate failed sid:${socket.id}, error:Signature check failed!`)
+    // Setup SocketIO Authentication
+    sioAuth(self.io, {
+      authenticate: function (socket, data, callback) {
+        self.log.verbose(`Authenticate sid:${socket.id}, name:'${data.name}', id:${data.sha_id}`)
 
-            return callback(new Error('Authentication error!'))
+        // If self connecting (i.e. From https://127.0.0.1:<port>/admin)
+        if (self.conf.name === data.name) {
+          Utils.server.verifySig(self.conf.key.public, data.signed, function (ret) {
+            if (ret.signatures[0].valid) {
+              // Store admin in ConnectedAdmins MemDB
+              self.ConnectedAdmins.insert({
+                name: data.name,
+                socket_id: socket.id
+              })
+
+              self.log.debug(`Admin Authenticate request sid:${socket.id}`)
+
+              return callback(null, 'authenticated')
+            } else {
+              self.log.error(`Admin Authenticate failed sid:${socket.id}, error:Signature check failed!`)
+
+              return callback(new Error('Authentication error!'))
+            }
+          })
+        } else {
+          // Check if client is in the HBData MemDB
+          var inMemDB = self.HBData.findOne({
+            name: data.name,
+            sha_id: data.sha_id
+          })
+
+          // Refuse new user if !Admin & inMemDB === true
+          if (inMemDB && self.conf.name !== data.name) {
+            self.log.warn(`Socket Disconnect sid:${socket.id} Duplicate client w/different sid`)
+
+            return callback(new Error('Authentication error - Duplicate Client!'))
           }
-        })
-      } else {
-        // Check if client is in the HBData MemDB
-        var inMemDB = self.HBData.findOne({
-          name: data.name,
-          sha_id: data.sha_id
-        })
 
-        // Refuse new user if !Admin & inMemDB === true
-        if (inMemDB && self.conf.name !== data.name) {
-          self.log.warn(`Socket Disconnect sid:${socket.id} Duplicate client w/different sid`)
-
-          return callback(new Error('Authentication error - Duplicate Client!'))
-        }
-
-        // Normal Clients - Lookup client in DB
-        self.DB.client.get({
-          name: data.name,
-          sha_id: data.sha_id
-        }, function (result) {
-          // Results = True; and the client & pubkey could be fetched from the DB
-          if (result) {
-            // Validate payload using Client's stored Public Key
-            Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
-              if (ret.signatures[0].valid) {
-                // Save client's new socket_id id to DB
-                self.DB.client.update({
-                  name: data.name,
-                  sha_id: data.sha_id,
-                  socket_id: socket.id
-                })
-
-                // Add client to HBData array
-                // Ignore Admins (current server via browser)
-                if (!inMemDB && self.conf.name !== data.name) {
-                  self.log.debug(`MemDB Add sid:${socket.id}, name:${data.name}, id:${data.sha_id}`)
-
-                  // Create entry for new client
-                  self.HBData.insert({
+          // Normal Clients - Lookup client in DB
+          self.DB.client.get({
+            name: data.name,
+            sha_id: data.sha_id
+          }, function (result) {
+            // Results = True; and the client & pubkey could be fetched from the DB
+            if (result) {
+              // Validate payload using Client's stored Public Key
+              Utils.server.verifySig(result.pubkey, data.signed, function (ret) {
+                if (ret.signatures[0].valid) {
+                  // Save client's new socket_id id to DB
+                  self.DB.client.update({
                     name: data.name,
                     sha_id: data.sha_id,
-                    socket_id: socket.client.id,
-                    data: {}
+                    socket_id: socket.id
                   })
+
+                  // Add client to HBData array
+                  // Ignore Admins (current server via browser)
+                  if (!inMemDB && self.conf.name !== data.name) {
+                    self.log.debug(`MemDB Add sid:${socket.id}, name:${data.name}, id:${data.sha_id}`)
+
+                    // Create entry for new client
+                    self.HBData.insert({
+                      name: data.name,
+                      sha_id: data.sha_id,
+                      socket_id: socket.client.id,
+                      data: {}
+                    })
+                  }
+
+                  // Good callback - Client authenticated!
+                  return callback(null, 'authenticated')
+                } else {
+                  self.log.error(`Authentication Failed sid:${socket.id}, name:${data.name}, Signature check failed!`)
+
+                  return callback(new Error('Authentication error!'))
                 }
+              })
+            } else {
+              self.log.error(`Authentication Failed sid:${socket.id}, name:${data.name}, No client by name & id!`)
 
-                // Good callback - Client authenticated!
-                return callback(null, 'authenticated')
-              } else {
-                self.log.error(`Authentication Failed sid:${socket.id}, name:${data.name}, Signature check failed!`)
+              return callback(new Error('Client not found'))
+            }
+          })
+        }
+      },
+      postAuthenticate: function (socket, data) {
+        self.log.verbose(`Client Authenticated Success name:${data.name}, sid:${socket.id}`)
+        socket.client.user = data.name
 
-                return callback(new Error('Authentication error!'))
-              }
-            })
-          } else {
-            self.log.error(`Authentication Failed sid:${socket.id}, name:${data.name}, No client by name & id!`)
+        socket.on('client-heartbeat', function (heartbeat) {
+          self.log.debug(`Client Heartbeat sid:${socket.client.id}, name:${socket.client.user}`)
 
-            return callback(new Error('Client not found'))
+          // Update heartbeat mem db
+          var update = self.HBData.findOne({ 'name': heartbeat.name })
+
+          // Parse heartbeat.data
+          update.data = JSON.parse(heartbeat.data)
+
+        // console.log(update)
+        })
+
+        socket.on('disconnect', function () {
+          // Remove client from live DB data
+          self.log.verbose(`Client Disconnected sid:${socket.client.id}, name:${socket.client.user}`)
+
+          // Get client in hb array
+          var clientInHBArr = self.HBData.findOne({ 'socket_id': socket.client.id })
+
+          // If Admin get in admin array
+          var clientInAdminArr = self.ConnectedAdmins.findOne({ 'socket_id': socket.client.id })
+
+          // Remove from hb array
+          if (clientInHBArr) {
+            self.HBData.remove(clientInHBArr)
+            self.log.debug(`MemDB::Clients removed sid:${socket.client.id}, name:${socket.client.user}`)
+          }
+
+          // Remove from Connected Admins MemDB
+          if (clientInAdminArr) {
+            self.log.debug(`MemDB::Admins removed sid:${socket.client.id}, name:${socket.client.user}`)
+            self.ConnectedAdmins.remove(clientInAdminArr)
           }
         })
       }
-    },
-    postAuthenticate: function (socket, data) {
-      self.log.verbose(`Client Authenticated Success name:${data.name}, sid:${socket.id}`)
-      socket.client.user = data.name
+    })
 
-      socket.on('client-heartbeat', function (heartbeat) {
-        self.log.debug(`Client Heartbeat sid:${socket.client.id}, name:${socket.client.user}`)
+    setInterval(function () {
+      // Currently connected admin clients
+      var currentAdmins = self.ConnectedAdmins.data
 
-        // Update heartbeat mem db
-        var update = self.HBData.findOne({ 'name': heartbeat.name })
+      // Prep data for emit.to of clients connected to server
+      var prepData = self.HBData.data
 
-        // Parse heartbeat.data
-        update.data = JSON.parse(heartbeat.data)
+      // Emit to each connected admin
+      for (var index = 0; index < currentAdmins.length; index++) {
+        var admin = currentAdmins[index]
+        self.io.to(admin.socket_id).emit('server-stats', {
+          hbData: prepData,
+          adminsData: currentAdmins
+        })
+      }
+    }, 1000)
 
-      // console.log(update)
-      })
-
-      socket.on('disconnect', function () {
-        // Remove client from live DB data
-        self.log.verbose(`Client Disconnected sid:${socket.client.id}, name:${socket.client.user}`)
-
-        // Get client in hb array
-        var clientInHBArr = self.HBData.findOne({ 'socket_id': socket.client.id })
-
-        // If Admin get in admin array
-        var clientInAdminArr = self.ConnectedAdmins.findOne({ 'socket_id': socket.client.id })
-
-        // Remove from hb array
-        if (clientInHBArr) {
-          self.HBData.remove(clientInHBArr)
-          self.log.debug(`MemDB::Clients removed sid:${socket.client.id}, name:${socket.client.user}`)
-        }
-
-        // Remove from Connected Admins MemDB
-        if (clientInAdminArr) {
-          self.log.debug(`MemDB::Admins removed sid:${socket.client.id}, name:${socket.client.user}`)
-          self.ConnectedAdmins.remove(clientInAdminArr)
-        }
-      })
-    }
+    typeof cb === 'function' && cb(null, 'connected')
   })
-
-  setInterval(function () {
-    // Currently connected admin clients
-    var currentAdmins = self.ConnectedAdmins.data
-
-    // Prep data for emit.to of clients connected to server
-    var prepData = self.HBData.data
-
-    // Emit to each connected admin
-    for (var index = 0; index < currentAdmins.length; index++) {
-      var admin = currentAdmins[index]
-      self.io.to(admin.socket_id).emit('server-stats', {
-        hbData: prepData,
-        adminsData: currentAdmins
-      })
-    }
-  }, 1000)
 }
 
 Server.prototype.close = function () {

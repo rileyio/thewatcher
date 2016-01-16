@@ -4,7 +4,7 @@ var path = require('path')
 // Shorten proc.env
 var Env = process.env
 
-module.exports = function (log, config) {
+module.exports = function (config) {
   var connection = knex({
     client: config.type,
     // debug: true,
@@ -20,15 +20,15 @@ module.exports = function (log, config) {
     }
   })
 
-  connection.raw('SELECT 1+1 AS result')
-    .return() // Return if not any errors
-    .then(function () {
-      log.verbose(`Database connection established host:${Env.TW_DB_HOST || config.host}`)
-    })
-    .catch(function (err) {
-      log.error(`Database Connection Error: Check credentials/connection)`)
-      if (err) throw err
-    })
+  // connection.raw('SELECT 1+1 AS result')
+  //   .return() // Return if not any errors
+  //   .then(function () {
+  //     log.verbose(`Database connection established host:${Env.TW_DB_HOST || config.host}`)
+  //   })
+  //   .catch(function (err) {
+  //     log.error(`Database Connection Error: Check credentials/connection)`)
+  //     if (err) throw err
+  //   })
 
   return connection
 }

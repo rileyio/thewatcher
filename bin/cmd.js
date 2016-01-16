@@ -5,7 +5,6 @@
 
 var TheWatcher = require('./app')
 var minimist = require('minimist')
-var multiline = require('multiline')
 var packageJson = require('../package.json')
 var path = require('path')
 // var child_process = require('child_process')
@@ -84,10 +83,8 @@ function extendedUtils (dbArg) {
 }
 
 function fullText () {
-  console.log(multiline(function () {
-/*
-
-   TheWatcher - %s
+  console.log(`
+   TheWatcher - ${packageJson.version}
 
    ===============================================
 
@@ -105,6 +102,5 @@ function fullText () {
       thewatcher -s client  Interactive setup
       thewatcher -a         /path/to/client.json
 
-*/
-  }), packageJson.version)
+`)
 }

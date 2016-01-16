@@ -6,6 +6,29 @@ var os = require('os')
 var Env = process.env
 
 /**
+ * For converting bytes to MB.
+ * @param {Number} num - Size in bytes.
+ */
+function toMB (num) {
+  return (num / 1024 / 1024)
+}
+
+/**
+ * Ensure logs directory exists.
+ * @param {Number} num - Size in bytes.
+ * @returns {Boolean} - True: Dir Exists, False: Does not.
+ */
+function logDirExists (dir) {
+  try {
+    fs.statSync(dir)
+  } catch (error) {
+    return false
+  }
+
+  return true
+}
+
+/**
  * Setup the logger
  * @param {String} name - This will be inherited as the name.
  * @param {String} level - Log level for console & file.
@@ -75,27 +98,4 @@ Logger.prototype.manual = function (text) {
   var self = this
 
   return fs.appendFileSync(self.fullPath, text, 'utf8')
-}
-
-/**
- * For converting bytes to MB.
- * @param {Number} num - Size in bytes.
- */
-function toMB (num) {
-  return (num / 1024 / 1024)
-}
-
-/**
- * Ensure logs directory exists.
- * @param {Number} num - Size in bytes.
- * @returns {Boolean} - True: Dir Exists, False: Does not.
- */
-function logDirExists (dir) {
-  try {
-    fs.statSync(dir)
-  } catch (error) {
-    return false
-  }
-
-  return true
 }

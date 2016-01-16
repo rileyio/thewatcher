@@ -7,8 +7,8 @@ var Env = process.env
 
 /**
  * Setup the logger
- * @param {any} name - This will be inherited as the name.
- * @param {any} location - Logs directory.
+ * @param {String} name - This will be inherited as the name.
+ * @param {String} level - Log level for console & file.
  */
 var Logger = module.exports = function (name, level) {
   var self = this
@@ -25,18 +25,10 @@ var Logger = module.exports = function (name, level) {
   self.maxLogs = 2
 
   // Verify directory existance
-  fs.stat(self.location, function (err, stats) {
-    if (err) {
-      // The ./logs dir does not exist
-      if (err.code === 'ENOENT') {
-        // Create it
-        fs.mkdirSync(self.location)
-      } else { // Different error, throw
-        console.log(err.message.red)
-        process.exit(1)
-      }
-    }
-  })
+  if (!logDirExists(self.location)) {
+    // Create it
+    fs.mkdirSync(self.location)
+  }
 
   // Setup Winston
   self.log = new (winston.Logger)({
@@ -85,6 +77,25 @@ Logger.prototype.manual = function (text) {
   return fs.appendFileSync(self.fullPath, text, 'utf8')
 }
 
+/**
+ * For converting bytes to MB.
+ * @param {Number} num - Size in bytes.
+ */
 function toMB (num) {
   return (num / 1024 / 1024)
+}
+
+/**
+ * Ensure logs directory exists.
+ * @param {Number} num - Size in bytes.
+ * @returns {Boolean} - True: Dir Exists, False: Does not.
+ */
+function logDirExists (dir) {
+  try {
+    fs.statSync(dir)
+  } catch (error) {
+    return false
+  }
+
+  return true
 }

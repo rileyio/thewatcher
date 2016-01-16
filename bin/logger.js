@@ -15,6 +15,7 @@ var Logger = module.exports = function (name, level) {
 
   self.name = name + '.log'
   self.level = level
+  self.silent = (Env.NODE_ENV === 'test') ? true : false
   self.location = (arguments[2] !== undefined) ? arguments[2] : path.join(Env.PWD, 'logs')
   self.fullPath = path.join(self.location, self.name)
 
@@ -34,7 +35,8 @@ var Logger = module.exports = function (name, level) {
   self.log = new (winston.Logger)({
     transports: [
       new (winston.transports.Console)({
-        level: self.level
+        level: self.level,
+        silent: self.silent
       }),
       new (winston.transports.File)({
         filename: self.fullPath,

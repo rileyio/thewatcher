@@ -42,7 +42,7 @@ module.exports = function () {
         template.lon = optional.lon
         template.created_at = Date.now()
         template.server = optional.server
-        // template.port = optional.port
+        template.interval = optional.interval || 1000
         template.key.private.path = ret.Private
         template.key.public.path = ret.Public
 

@@ -32,7 +32,8 @@ describe('Loading TheWatcher', function () {
     name: 'TheWatcher-Test Client',
     server: '127.0.0.1:9905',
     lat: '0.0',
-    lon: '0.0'
+    lon: '0.0',
+    interval: 1000
   }
 
   after(function () {

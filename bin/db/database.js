@@ -15,7 +15,7 @@ var Database = module.exports = function (config) {
   self.DB = connection(self.config)
 
   // Options ( DB.client.add, DB.server..)
-  self.client = new ClientQueries(self.DB)
+  self.client = new ClientQueries(self)
 }
 
 Database.prototype.ready = function (cb) {

@@ -1,3 +1,5 @@
+/*eslint no-process-exit: 2*/
+
 var Database = require('./../../db/database')
 var Utils = require('./../utils')
 var fs = require('fs')
@@ -36,20 +38,24 @@ Manage.setupDB = function (cb) {
 }
 
 /**
- * Adds a client.json to the database.
+ * Adds a client.json to the database - Helper to Database.client.add
  * @param {string} confPath - Location of the .json config file to add.
  * @param {callback} cb - Optional callback, called after DB add.
  */
 Manage.add = {
-  client: function (confPath, cb) {
+  client: function (confPath, callback) {
     // Call prep
     Manage.prep()
 
     // Load client.json to add to clients table
     var clientConfig = Utils.client.load.config('client', confPath)
 
-    Manage.DB.client.add(clientConfig, function (ret) {
-      typeof cb === 'function' ? cb(ret) : process.exit(0)
+    Manage.DB.client.add(clientConfig, function (err, ret) {
+      // Optional callback reutrn if callback is requested.
+      if (typeof callback === 'function') return callback(err, ret)
+
+      // No callback but throw error (example when used: cli)
+      if (err) throw new Error(err)
     })
   }
 }

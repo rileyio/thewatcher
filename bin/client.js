@@ -72,7 +72,7 @@ Client.prototype.start = function () {
     self.emit('status', null, { message: 'connected' })
 
     // Start Data heartbeat
-    self.heartbeat()
+    self.startPulse()
   })
 
   self.socket.on('unauthorized', function (err) {
@@ -87,6 +87,9 @@ Client.prototype.start = function () {
   self.socket.on('disconnect', function () {
     self.log.info(`Disconnected from server`)
     self.emit('status', null, { message: 'disconnected' })
+
+    // Stop updater
+    clearInterval(self.intervalUpdater)
   })
 
   self.socket.on('error', function (err) {
@@ -95,21 +98,19 @@ Client.prototype.start = function () {
   })
 }
 
-Client.prototype.heartbeat = function () {
+Client.prototype.startPulse = function () {
   var self = this
 
-  setInterval(function () {
-    var heartbeatTime = Date.now()
-
+  self.intervalUpdater = setInterval(function () {
     self.socket.emit('client-heartbeat', {
       name: self.conf.name,
-      time: heartbeatTime,
-      data: HeartBeatData()
+      time: Date.now(),
+      data: pulseData()
     })
   }, self.conf.interval)
 }
 
-function HeartBeatData () {
+function pulseData () {
   return JSON.stringify({
     uptime: os.uptime(),
     memory: {

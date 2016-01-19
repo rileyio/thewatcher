@@ -76,7 +76,7 @@ Client.prototype.start = function () {
   })
 
   self.socket.on('unauthorized', function (err) {
-    self.log.error(`Client unauthorized (From Server: ${err})`)
+    self.log.error(`Client unauthorized (From Server: ${err.message})`)
     self.emit('status', err, null)
   })
 

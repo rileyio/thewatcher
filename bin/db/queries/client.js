@@ -20,14 +20,14 @@ Client.prototype.get = function (data, callback) {
       'sha_id': data.sha_id
     })
     .then(function (ret) {
-      if (ret) {
+      if (ret.length > 0) {
         self.log.info(`Client lookup success for name:${data.name}, id:${data.sha_id}`)
       } else {
         self.log.error(`Client get failed for name:${data.name}, id:${data.sha_id}`)
       }
 
       // Return on successful
-      if (typeof callback === 'function') return callback(null, ret)
+      if (typeof callback === 'function') return callback(null, ret[0])
     })
     .catch(function (err) {
       self.log.error(`Client get failed (${err.code}) for name:${data.name}, id:${data.sha_id}`)

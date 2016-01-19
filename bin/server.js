@@ -134,7 +134,7 @@ Server.prototype.start = function (cb) {
           self.DB.client.get({
             name: data.name,
             sha_id: data.sha_id
-          }, function (result) {
+          }, function (err, result) {
             // Results = True; and the client & pubkey could be fetched from the DB
             if (result) {
               // Validate payload using Client's stored Public Key

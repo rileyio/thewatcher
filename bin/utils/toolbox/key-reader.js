@@ -10,10 +10,10 @@ module.exports = function (keys, type) {
   try {
     // Check that key path is not empty
     // if (keys.private.length) {
-    console.log('TheWatcher >> %s >> PGP [Private] Key Loaded!'.green, type)
+    // console.log('TheWatcher >> %s >> PGP [Private] Key Loaded!'.green, type)
     keyData.private = loadKey(keys.private.path)
 
-    console.log('TheWatcher >> %s >> PGP [Public] Key Loaded!'.green, type)
+    // console.log('TheWatcher >> %s >> PGP [Public] Key Loaded!'.green, type)
     keyData.public = loadKey(keys.public.path)
 
     // console.log(keyData)
@@ -22,7 +22,7 @@ module.exports = function (keys, type) {
 
   // }
   } catch (err) {
-    console.log('TheWatcher >> Error >> '.red, err)
+    // console.log('TheWatcher >> Error >> '.red, err)
   }
 }
 

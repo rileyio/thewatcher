@@ -39,13 +39,13 @@ module.exports = function (type) {
     if (configParsed.key.private.path !== undefined) {
       configParsed.key = keyReader(configParsed.key, type)
     }
-    // ELSE, This is an exported json and just return the inline values
+  // ELSE, This is an exported json and just return the inline values
   } catch (error) {
     if (error.code === 'ENOENT') {
-      console.log('Config missing ( conf/%s.json )'.red, type)
+      // console.log('Config missing ( conf/%s.json )'.red, type)
       process.exit(0)
     } else {
-      console.log('err'.red, error)
+      // console.log('err'.red, error)
     }
   }
 

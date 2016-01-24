@@ -8,15 +8,14 @@ var Env = process.env
 /**
  * Setup the logger
  * @param {String} name - This will be inherited as the name.
- * @param {String} level - Log level for console & file.
  */
-var Logger = module.exports = function (name, level) {
+var Logger = module.exports = function (name) {
   var self = this
 
   self.name = name + '.log'
-  self.level = level
+  self.level = Env.TW_LOG || 'info'
   self.silent = (Env.NODE_ENV === 'test') ? true : false
-  self.location = (arguments[2] !== undefined) ? arguments[2] : path.join(Env.PWD, 'logs')
+  self.location = path.join(Env.PWD, 'logs')
   self.fullPath = path.join(self.location, self.name)
 
   // Log size before rollover, Default 2MB (23068672 bytes)

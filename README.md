@@ -171,6 +171,7 @@ TW_DB_HOST=127.0.0.1
 TW_DB_USER=user
 TW_DB_PASS=pass
 TW_DB_NAME=thewatcher
+TW_LOG=debug
 ```
 
 ---

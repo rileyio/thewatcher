@@ -9,7 +9,7 @@ var Database = module.exports = function (config) {
   var self = this
 
   // Setup logging
-  self.log = new Logger('Database', 'silly').log
+  self.log = new Logger('Database').log
 
   self.config = config
   self.DB = connection(self.config)

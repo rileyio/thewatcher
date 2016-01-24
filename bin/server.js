@@ -26,7 +26,7 @@ var Server = module.exports = function () {
   self.conf = undefined
 
   // Setup logging
-  self.log = new Logger('Server', 'silly').log
+  self.log = new Logger('Server').log
 
   // HTTPS Certificate config
   self.httpsOpts = {
@@ -235,7 +235,7 @@ Server.prototype.start = function (cb) {
       }
     }, 1000)
 
-    typeof cb === 'function' && cb(null, 'connected')
+    if (typeof cb === 'function') return cb(null, 'connected')
   })
 }
 

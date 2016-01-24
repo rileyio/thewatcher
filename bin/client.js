@@ -27,7 +27,7 @@ Client.prototype.start = function () {
   var self = this
 
   // Setup logging
-  self.log = new Logger('Client', 'silly').log
+  self.log = new Logger('Client').log
 
   self.log.info(`TheWatcher Client mode running`)
 

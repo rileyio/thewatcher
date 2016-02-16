@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/TheDoxMedia/thewatcher/issues"
   },
-  "author": "TheDoxMedia",
+  "author": "Jared Booker <jay@tdm.io>",
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.12.4",

@@ -184,6 +184,14 @@ TW_LOG=debug
 ---
 
 ### # Versions
+##### 1.1.1
+  - Added logging
+  - Updates to setup
+  - Support for environment variable DB settings
+  - Updates to npm test testing
+  - Added wait for DB connection to server
+  - Fixed client heartbeat multiplier in certain situations
+
 ##### 1.0.1
   - Memory DB for storing heartbeat/client current data.
   - MySQL (See docs for supported) DB for storing clients.

@@ -7,11 +7,11 @@ var path = require('path')
 // Shorten proc.env
 var Env = process.env
 
-module.exports = function () {
-  // Load default config layout from template js
-  var template = require(path.join(
-    Env.PWD, '/resources/server/templates/config'))
+// Load default config layout from template js
+var template = require(path.join(
+  Env.PWD, '/resources/server/templates/config'))
 
+module.exports = function () {
   var optional = arguments[0]
   var callback = arguments[1]
 

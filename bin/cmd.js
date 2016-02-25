@@ -5,16 +5,15 @@
 
 var TheWatcher = require('./app')
 var minimist = require('minimist')
-var multiline = require('multiline')
 var packageJson = require('../package.json')
 var path = require('path')
 // var child_process = require('child_process')
 
 process.title = 'TheWatcher'
 
-process.on('exit', function () {
-  console.log('TheWatcher exiting..'.cyan)
-})
+// process.on('exit', function () {
+//   console.log('TheWatcher exiting..'.cyan)
+// })
 
 // thewatcher -m <server|client>
 
@@ -45,7 +44,6 @@ if (args.setup) {
     case 'server':
       var server = new TheWatcher.Server()
       server.start()
-
       // setTimeout(function () {
       //   server.close()
       // }, 6000)
@@ -85,10 +83,8 @@ function extendedUtils (dbArg) {
 }
 
 function fullText () {
-  console.log(multiline(function () {
-/*
-
-   TheWatcher - %s
+  console.log(`
+   TheWatcher - ${packageJson.version}
 
    ===============================================
 
@@ -106,6 +102,5 @@ function fullText () {
       thewatcher -s client  Interactive setup
       thewatcher -a         /path/to/client.json
 
-*/
-  }), packageJson.version)
+`)
 }

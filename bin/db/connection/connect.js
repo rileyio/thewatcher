@@ -9,10 +9,10 @@ module.exports = function (config) {
     client: config.type,
     // debug: true,
     connection: {
-      host: config.host,
-      user: config.user,
-      password: config.pass,
-      database: config.database,
+      host: Env.TW_DB_HOST || config.host,
+      user: Env.TW_DB_USER || config.user,
+      password: Env.TW_DB_PASS || config.pass,
+      database: Env.TW_DB_NAME || config.database,
       charset: 'utf8'
     },
     migrations: {
@@ -20,16 +20,15 @@ module.exports = function (config) {
     }
   })
 
-  connection.raw('SELECT 1+1 AS result')
-    .return() // Return if not any errors
-    .then(function () {
-      console.log('TheWatcher >> Server >> DB::Connected!'.green)
-    })
-    .catch(function (err) {
-      if (err) throw err
-      console.log('Check DB credentials/connection'.red)
-      process.exit(1)
-    })
+  // connection.raw('SELECT 1+1 AS result')
+  //   .return() // Return if not any errors
+  //   .then(function () {
+  //     log.verbose(`Database connection established host:${Env.TW_DB_HOST || config.host}`)
+  //   })
+  //   .catch(function (err) {
+  //     log.error(`Database Connection Error: Check credentials/connection)`)
+  //     if (err) throw err
+  //   })
 
   return connection
 }

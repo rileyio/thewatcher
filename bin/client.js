@@ -7,18 +7,29 @@
 
 var io = require('socket.io-client')
 var os = require('os')
-var Utils = require('./../utils/utils')
+var Utils = require('./utils/utils')
 var extend = require('xtend')
+var EventEmitter = require('events').EventEmitter
+var util = require('util')
+var Logger = require('./logger')
 
 var Client = module.exports = function () {
   var self = this
 
   // Load server config
-  self.conf = undefined
+
+  EventEmitter.call(self)
 }
+
+util.inherits(Client, EventEmitter)
 
 Client.prototype.start = function () {
   var self = this
+
+  // Setup logging
+  self.log = new Logger('Client').log
+
+  self.log.info(`TheWatcher Client mode running`)
 
   // Load client config
   self.conf = (self.conf === undefined)
@@ -30,16 +41,24 @@ Client.prototype.start = function () {
     'forceNew': true
   })
 
+  self.log.info(`Connecting ${self.conf.name}@${self.conf.server}`)
+
   self.socket.on('connect', function (sio) {
+    self.log.info(`Connected to server sid:${self.socket.id}`)
+
+    // Credentials prep
     var prepMsg = JSON.stringify({
       session: self.socket.id,
       sha_id: self.conf.id,
       name: self.conf.name
     })
 
+    // Sign credentials prep message (Object) and on successful callback
+    // Perform authentication request.
     Utils.client.sign(self.conf.key.private, prepMsg, function (signed) {
-      // console.log(signed)
+      self.log.info(`Client authentication request over WebSocket`)
 
+      // Perform authentication request
       self.socket.emit('authentication', {
         name: self.conf.name,
         sha_id: self.conf.id,
@@ -49,48 +68,49 @@ Client.prototype.start = function () {
   })
 
   self.socket.on('authenticated', function () {
-    console.log('Socket Connected!')
+    self.log.info(`Client authenticated!`)    
+    self.emit('status', null, { message: 'connected' })
 
     // Start Data heartbeat
-    self.heartbeat()
+    self.startPulse()
   })
 
   self.socket.on('unauthorized', function (err) {
-    console.log('There was an error with the authentication:', err.message)
+    self.log.error(`Client unauthorized (From Server: ${err.message})`)
+    self.emit('status', err, null)
   })
 
   self.socket.on('reconnecting', function (attempt) {
-    console.log('Reconnecting', attempt)
+    self.emit('status', null, { message: 'reconnecting', attempt: attempt })
   })
 
   self.socket.on('disconnect', function () {
-    console.log('Socket Disconnect!')
+    self.log.info(`Disconnected from server`)
+    self.emit('status', null, { message: 'disconnected' })
+
+    // Stop updater
+    clearInterval(self.intervalUpdater)
   })
 
   self.socket.on('error', function (err) {
-    console.log('Error:', err)
+    self.log.error(`Error ${err}`)
+    self.emit('status', err, { message: 'disconnected' })
   })
-
-  console.log('TheWatcher >> Client >> Started!'.green)
 }
 
-Client.prototype.heartbeat = function () {
+Client.prototype.startPulse = function () {
   var self = this
 
-  setInterval(function () {
-    var heartbeatTime = Date.now()
-
-    // console.log(heartbeatTime)
-
+  self.intervalUpdater = setInterval(function () {
     self.socket.emit('client-heartbeat', {
       name: self.conf.name,
-      time: heartbeatTime,
-      data: HeartBeatData()
+      time: Date.now(),
+      data: pulseData()
     })
   }, self.conf.interval)
 }
 
-function HeartBeatData () {
+function pulseData () {
   return JSON.stringify({
     uptime: os.uptime(),
     memory: {

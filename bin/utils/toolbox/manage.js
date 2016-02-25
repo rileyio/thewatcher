@@ -1,3 +1,5 @@
+/*eslint no-process-exit: 2*/
+
 var Database = require('./../../db/database')
 var Utils = require('./../utils')
 var fs = require('fs')
@@ -22,29 +24,38 @@ Manage.prep = function () {
   self.DB = new Database(self.conf.db)
 }
 
-Manage.setupDB = function () {
+/**
+ * Runs DB migration.
+ * @param {callback} cb - Optional callback, called after migrate.
+ */
+Manage.setupDB = function (cb) {
   var self = this
   self.prep()
 
   // Setup Primary DB
   self.DB = new Database(self.conf.db)
-  self.DB.setup()
+  self.DB.setup(cb)
 }
 
 /**
- * Adds a client.json to the database.
- * @param {string} Location of the .json config file to add.
+ * Adds a client.json to the database - Helper to Database.client.add
+ * @param {string} confPath - Location of the .json config file to add.
+ * @param {callback} cb - Optional callback, called after DB add.
  */
 Manage.add = {
-  client: function (confPath) {
+  client: function (confPath, callback) {
     // Call prep
     Manage.prep()
 
     // Load client.json to add to clients table
     var clientConfig = Utils.client.load.config('client', confPath)
 
-    Manage.DB.client.add(clientConfig, function (ret) {
-      process.exit(0)
+    Manage.DB.client.add(clientConfig, function (err, ret) {
+      // Optional callback reutrn if callback is requested.
+      if (typeof callback === 'function') return callback(err, ret)
+
+      // No callback but throw error (example when used: cli)
+      if (err) throw new Error(err)
     })
   }
 }

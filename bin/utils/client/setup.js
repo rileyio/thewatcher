@@ -7,10 +7,10 @@ var path = require('path')
 // Shorten proc.env
 var Env = process.env
 
-module.exports = function (calling) {
-  // Load default config layout from template js
-  var template = require(path.join(Env.PWD, '/resources/client/templates/config'))
+// Load default config layout from template js
+var template = require(path.join(Env.PWD, '/resources/client/templates/config'))
 
+module.exports = function () {
   var optional = arguments[0]
   var callback = arguments[1]
 
@@ -41,16 +41,10 @@ module.exports = function (calling) {
         template.lat = optional.lat
         template.lon = optional.lon
         template.created_at = Date.now()
-        template.port = optional.port
+        template.server = optional.server
+        template.interval = optional.interval || 1000
         template.key.private.path = ret.Private
         template.key.public.path = ret.Public
-
-        // Database
-        template.db.type = optional.db.type
-        template.db.host = optional.db.host
-        template.db.database = optional.db.database
-        template.db.user = optional.db.user
-        template.db.pass = optional.db.pass
 
         // With no error on key gen
         if (!ret.message) {

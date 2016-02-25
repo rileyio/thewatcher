@@ -6,9 +6,8 @@
 
 var Utils = require('./utils/utils')
 var Manage = require('./utils/toolbox/manage')
-var Server = require('./server/server')
-var Client = require('./client/client')
-
+var Server = require('./server')
+var Client = require('./client')
 
 var TheWatcher = module.exports
 

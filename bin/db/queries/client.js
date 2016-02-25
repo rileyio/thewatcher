@@ -1,12 +1,17 @@
-var Client = function (DB) {
-  var self = this
-  self.DB = DB
+// var Client = function (DB) {
+//   var self = this
+//   self.DB = DB
+// }
+
+var Client = module.exports = function (database) {
+  this.DB = database.DB
+  this.log = database.log
 }
 
 Client.prototype.get = function (data, callback) {
   var self = this
 
-  console.log('TheWatcher >> Server >> DB::Client(lookup:%s)'.yellow, data.name)
+  // console.log('TheWatcher >> Server >> DB::Client(lookup:%s)'.yellow, data.name)
 
   self.DB('clients')
     .select('*')
@@ -16,23 +21,26 @@ Client.prototype.get = function (data, callback) {
     })
     .then(function (ret) {
       if (ret.length > 0) {
-        console.log('TheWatcher >> Server >> DB::Client(lookup:%s)->Success'.green, data.name)
-
-        // Return lookup data
-        return callback(ret[0])
+        self.log.info(`Client lookup success for name:${data.name}, id:${data.sha_id}`)
       } else {
-        console.log('TheWatcher >> Server >> DB::Client(lookup:%s)->Failed'.red, data.name)
-
-        // Return lookup data
-        return callback(null)
+        self.log.error(`Client get failed for name:${data.name}, id:${data.sha_id}`)
       }
+
+      // Return on successful
+      if (typeof callback === 'function') return callback(null, ret[0])
+    })
+    .catch(function (err) {
+      self.log.error(`Client get failed (${err.code}) for name:${data.name}, id:${data.sha_id}`)
+
+      // Return error
+      if (typeof callback === 'function') return callback(err, null)
     })
 }
 
-Client.prototype.update = function (data) {
+Client.prototype.update = function (data, callback) {
   var self = this
 
-  console.log('TheWatcher >> Server >> DB::Client(update:%s)'.yellow, data.name)
+  // console.log('TheWatcher >> Server >> DB::Client(update:%s)'.yellow, data.name)
 
   self.DB('clients')
     .where({
@@ -45,20 +53,26 @@ Client.prototype.update = function (data) {
     })
     .then(function (ret) {
       if (ret) {
-        console.log('TheWatcher >> Server >> DB::Client(update:%s)->Success'.green, data.name)
+        self.log.info(`Client updated name:${data.name}, id:${data.sha_id}`)
       } else {
-        console.log('TheWatcher >> Server >> DB::Client(update:%s)->Failed'.red, data.name)
+        self.log.error(`Failed to update client name:${data.name}, id:${data.sha_id}`)
       }
 
-      // Return lookup data (No callback)
-      return ret
+      // Return on successful
+      if (typeof callback === 'function') return callback(null, ret)
+    })
+    .catch(function (err) {
+      self.log.error(`Failed to update client (${err.code}) name:${data.name}, id:${data.sha_id}`)
+
+      // Return error
+      if (typeof callback === 'function') return callback(err, null)
     })
 }
 
 Client.prototype.add = function (data, callback) {
   var self = this
 
-  console.log('TheWatcher >> Server >> DB::Client(add:%s)'.yellow, data.name)
+  // console.log('TheWatcher >> Server >> DB::Client(add:%s)'.yellow, data.name)
 
   self.DB('clients')
     .insert({
@@ -72,14 +86,18 @@ Client.prototype.add = function (data, callback) {
     })
     .then(function (ret) {
       if (ret) {
-        console.log('TheWatcher >> Server >> DB::Client(add:%s)->Success'.green, data.name)
+        self.log.info(`New client saved to db name:${data.name}, id:${data.id}`)
       } else {
-        console.log('TheWatcher >> Server >> DB::Client(add:%s)->Failed'.red, data.name)
+        self.log.error(`Failed to add new client to db name:${data.name}, id:${data.id}`)
       }
 
       // Return insert pkey value on successful
-      return callback(ret)
+      if (typeof callback === 'function') return callback(null, ret)
+    })
+    .catch(function (err) {
+      self.log.error(`Failed to add new client (${err.code}) to db name:${data.name}, id:${data.id}`)
+
+      // Return error
+      if (typeof callback === 'function') return callback(err, null)
     })
 }
-
-module.exports = Client

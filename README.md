@@ -184,6 +184,10 @@ TW_LOG=debug
 ---
 
 ### # Versions
+##### 1.1.2
+  - Dependencies update.
+  - Shortened user ID to shorter 7 digit output, full value still passed internally.
+
 ##### 1.1.1
   - Added logging
   - Updates to setup

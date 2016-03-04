@@ -1,7 +1,4 @@
-// var Client = function (DB) {
-//   var self = this
-//   self.DB = DB
-// }
+var Utils = require('../../utils/utils')
 
 var Client = module.exports = function (database) {
   this.DB = database.DB
@@ -21,16 +18,17 @@ Client.prototype.get = function (data, callback) {
     })
     .then(function (ret) {
       if (ret.length > 0) {
-        self.log.info(`Client lookup success for name:${data.name}, id:${data.sha_id}`)
+        self.log.info(`Client lookup success for name:${data.name}, id:${Utils.id(data.sha_id).short}`)
       } else {
-        self.log.error(`Client get failed for name:${data.name}, id:${data.sha_id}`)
+        self.log.error(`Client get failed for name:${data.name}, id:${Utils.id(data.sha_id).short}`)
       }
 
       // Return on successful
       if (typeof callback === 'function') return callback(null, ret[0])
     })
     .catch(function (err) {
-      self.log.error(`Client get failed (${err.code}) for name:${data.name}, id:${data.sha_id}`)
+      throw err
+      self.log.error(`Client get failed (${err.code}) for name:${data.name}, id:${Utils.id(data.sha_id).short}`)
 
       // Return error
       if (typeof callback === 'function') return callback(err, null)
@@ -53,16 +51,16 @@ Client.prototype.update = function (data, callback) {
     })
     .then(function (ret) {
       if (ret) {
-        self.log.info(`Client updated name:${data.name}, id:${data.sha_id}`)
+        self.log.info(`Client updated name:${data.name}, id:${Utils.id(data.sha_id).short}`)
       } else {
-        self.log.error(`Failed to update client name:${data.name}, id:${data.sha_id}`)
+        self.log.error(`Failed to update client name:${data.name}, id:${Utils.id(data.sha_id).short}`)
       }
 
       // Return on successful
       if (typeof callback === 'function') return callback(null, ret)
     })
     .catch(function (err) {
-      self.log.error(`Failed to update client (${err.code}) name:${data.name}, id:${data.sha_id}`)
+      self.log.error(`Failed to update client (${err.code}) name:${data.name}, id:${Utils.id(data.sha_id).short}`)
 
       // Return error
       if (typeof callback === 'function') return callback(err, null)

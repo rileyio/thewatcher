@@ -5,6 +5,7 @@
 // Universal/Toolbox (Not server or client specific)
 var configLoader = require('./toolbox/config-loader')
 var pgpMsgSign = require('./toolbox/sign')
+var id = require('./toolbox/id')
 
 // Server specific
 var server_setup = require('./server/setup')
@@ -29,5 +30,6 @@ module.exports = {
     load: {
       config: configLoader
     }
-  }
+  },
+  id: id
 }

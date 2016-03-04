@@ -19,11 +19,13 @@
     .fail-text {
       color: rgba(192, 57, 43, 1.0);
     }
+    
     .client-sep {
-      color: rgba(41, 128, 185,1.0);
+      color: rgba(41, 128, 185, 1.0);
     }
+    
     .client-value {
-      color: rgba(142, 68, 173,1.0);
+      color: rgba(142, 68, 173, 1.0);
     }
   </style>
 </head>
@@ -62,24 +64,24 @@
         <div id="admins">
           <div v-for="admin in admins">
             <b>ADMIN<span class="admin-sep">::</span><span class="admin-value">{{ admin.name }}</span></b> &nbsp;&nbsp;&nbsp;
-            <b>SocketID<span class="admin-sep">::</span><span class="admin-value">{{ admin.socket_id }}</span></b> &nbsp;&nbsp;&nbsp;
-          </div>
-        </div>
-      
-        <div v-for="client in clients">
-          <b>Name<span class="client-sep">::</span><span class="client-value">{{ client.name }}</span></b> &nbsp;&nbsp;&nbsp;
-          Uptime::{{ client.data.uptime }}
-          Mem::<span class="client-value">{{ client.data.memory.free }}/{{ client.data.memory.total }}</span>
-        </div>
-      </div>
+      <b>SocketID<span class="admin-sep">::</span><span class="admin-value">{{ admin.socket_id }}</span></b> &nbsp;&nbsp;&nbsp;
     </div>
   </div>
-  
-    <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/1.0.13/vue.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/openpgp/1.4.1/openpgp.min.js"></script>
-    <script>
+
+  <div v-for="client in clients">
+    <b>Name<span class="client-sep">::</span><span class="client-value">{{ client.name }}</span></b> &nbsp;&nbsp;&nbsp; Uptime::{{
+    client.data.uptime }} Mem::
+    <span class="client-value">{{ client.data.memory.free }}/{{ client.data.memory.total }}</span>
+  </div>
+  </div>
+  </div>
+  </div>
+
+  <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/vue/1.0.13/vue.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/openpgp/2.1.0/openpgp.min.js"></script>
+  <script>
     // PGP Key Data
     var pgpKeyData = {};
     var selfURL = window.location.host;
@@ -208,7 +210,10 @@
     function pgpSign(key, message, callback){
       var readKey = openpgp.key.readArmored(key);
 
-      openpgp.signClearMessage(readKey.keys[0], message)
+      openpgp.sign({
+        data: message.toString(),
+        privateKeys: readKey.keys[0]
+      })
         .then(callback);
     }
 
@@ -224,8 +229,7 @@
       // Update debug line
       $('#' + id) .addClass(newColor).prepend(newMark);
     }
-
-      </script>
+  </script>
 </body>
 
 </html>

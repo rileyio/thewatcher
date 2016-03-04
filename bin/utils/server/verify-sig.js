@@ -8,8 +8,12 @@ var openpgp = require('openpgp')
  */
 module.exports = function (key, signedMsg, callback) {
   var readKey = openpgp.key.readArmored(key)
-  var message = openpgp.cleartext.readArmored(signedMsg)
+  var message = openpgp.cleartext.readArmored(signedMsg.data)
+  console.log('message', message)
 
-  openpgp.verifyClearSignedMessage(readKey.keys[0], message)
+  openpgp.verify({
+    publicKeys: readKey.keys,
+    message: message
+  })
     .then(callback)
 }

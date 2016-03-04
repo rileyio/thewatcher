@@ -79,7 +79,7 @@ function generate_key (userInput, callback) {
 
   var options = {
     numBits: 2048,
-    userId: userInput.name
+    userIds: [{ name :userInput.name }]
   }
 
   // Check for default config/keys path (#2)
@@ -95,7 +95,7 @@ function generate_key (userInput, callback) {
       }
     }
 
-    openpgp.generateKeyPair(options)
+    openpgp.generateKey(options)
       .then(function (keypair) {
         // Success
         var privkey = keypair.privateKeyArmored
